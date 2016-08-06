@@ -216,6 +216,10 @@ vmCvar_t	g_austrian;
 vmCvar_t	g_powerDuelStartHealth;
 vmCvar_t	g_powerDuelEndHealth;
 
+// sMod Cvars
+
+vmCvar_t	g_allowBlackNames;
+
 // nmckenzie: temporary way to show player healths in duels - some iface gfx in game would be better, of course.
 // DUEL_HEALTH
 vmCvar_t		g_showDuelHealths;
@@ -461,6 +465,9 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_showDuelHealths, "g_showDuelHealths", "0", CVAR_SERVERINFO },
 	{ &g_powerDuelStartHealth, "g_powerDuelStartHealth", "150", CVAR_ARCHIVE, 0, qtrue  },
 	{ &g_powerDuelEndHealth, "g_powerDuelEndHealth", "90", CVAR_ARCHIVE, 0, qtrue  },
+
+// sMod cvars
+	{ &g_allowBlackNames, "g_allowBlackNames", "0", CVAR_ARCHIVE, 0, qtrue}
 };
 
 // bk001129 - made static to avoid aliasing
