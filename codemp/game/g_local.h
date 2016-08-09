@@ -130,6 +130,61 @@ extern void *g2SaberInstance;
 extern qboolean gEscaping;
 extern int gEscapeTime;
 
+//extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is this extern
+
+//sMod tweaks
+
+/*
+//Force Tweaks
+#define	FT_NO_CROUCHATTACK_FP (1<<0)
+#define	FT_FIX_PROJ_PUSH	  (1<<1)
+#define	FT_PUSHPULLKD		  (1<<2)
+#define	FT_GRIPABSORB		  (1<<3)
+#define	FT_FORCECOMBO		  (1<<4)
+#define	FT_PULLSTRENGTH		  (1<<5)
+#define	FT_JK2GRIP			  (1<<6)
+#define	FT_FASTGRIP			  (1<<7)
+#define	FT_PUSHPULLITEMS	  (1<<8)
+#define FT_FIXDRAINCOF		  (1<<9)
+#define FT_JK2KNOCKDOWN		  (1<<10)
+#define FT_JK2GETUPS		  (1<<11)
+#define FT_JK2PULLROLL		  (1<<12)
+#define FT_NODRAINABSORB	  (1<<13)
+#define FT_GRIPDURINGROLL	  (1<<14)
+*/
+
+//Saber tweaks
+/*
+#define	ST_NO_MP_SABERLERP		(1<<0)
+#define ST_JK2_DMGSYSTEM		(1<<1)
+#define ST_REDUCE_SABERBLOCK	(1<<2)
+#define	ST_REDUCE_SABERDROP		(1<<3)
+#define ST_ALLOW_ROLLCANCEL		(1<<4) //CLIENT
+#define ST_NO_REDCHAIN			(1<<5)
+#define ST_FIXED_SABERSWITCH	(1<<6)
+#define ST_EASYBACKSLASH		(1<<7)
+#define ST_JK2RDFA				(1<<8)
+#define ST_FIXYELLOWDFA			(1<<9)
+#define ST_SPINREDDFA			(1<<10)
+#define ST_SPINBACKSLASH		(1<<11)
+#define ST_JK2LUNGE				(1<<12)
+#define ST_REDDFAFIX			(1<<13)
+#define ST_REDDFANOFORCE		(1<<14)
+#define ST_EASIERBACKSLASH		(1<<15)
+*/
+#define ST_SABERGUN				(1<<16)
+
+/*
+//Saberstyles
+#define SABERSTYLE_BLUE (1<<0)//no blue
+#define SABERSTYLE_YELLOW (1<<1)//no yellow
+#define SABERSTYLE_RED (1<<2) //no red
+#define SABERSTYLE_DUAL (1<<3) //no duals
+#define SABERSTYLE_STAFF (1<<4)//no staff
+#define SABERSTYLE_DESANN (1<<5)// desann only
+#define SABERSTYLE_TAVION (1<<6)//tavion only
+*/
+
 struct gentity_s {
 	//rww - entstate must be first, to correspond with the bg shared entity structure
 	entityState_t	s;				// communicated by server to clients
@@ -1312,6 +1367,7 @@ extern int gSlowMoDuelTime;
 
 // sMod cvars
 extern vmCvar_t g_allowBlackNames;
+extern vmCvar_t g_tweakSaber;
 
 void G_PowerDuelCount(int *loners, int *doubles, qboolean countSpec);
 

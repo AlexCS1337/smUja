@@ -4832,8 +4832,16 @@ void G_SPSaberDamageTraceLerped( gentity_t *self, int saberNum, int bladeNum, ve
 	vec3_t mp1, mp2;
 	vec3_t md1, md2;
 
-	VectorCopy( self->client->saber[saberNum].blade[bladeNum].trail.base, baseOld );
-	VectorCopy( self->client->saber[saberNum].blade[bladeNum].trail.tip, endOld );
+	if (((level.time - self->client->saber[saberNum].blade[bladeNum].trail.lastTime) > 100) && !(g_tweakSaber.integer & ST_SABERGUN))
+	{//no valid last pos, use current
+		VectorCopy(baseNew, baseOld);
+		VectorCopy(endNew, endOld);
+	}
+	else
+	{//trace from last pos
+		VectorCopy(self->client->saber[saberNum].blade[bladeNum].trail.base, baseOld);
+		VectorCopy(self->client->saber[saberNum].blade[bladeNum].trail.tip, endOld);
+	}
 
 	VectorCopy( baseOld, mp1 );
 	VectorCopy( baseNew, mp2 );

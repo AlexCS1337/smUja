@@ -397,6 +397,33 @@ void	Svcmd_ForceTeam_f( void ) {
 	SetTeam( &g_entities[cl - level.clients], str );
 }
 
+typedef struct bitInfo_S {
+	const char	*string;
+} bitInfo_T;
+
+
+static bitInfo_T saberTweaks[] = {
+	/*
+	{ "Skip saber interpolate for MP dmgs" },//1
+	{ "JK2 1.02 Style Damage System" },//2
+	{ "Reduced saberblock for MP damages" },//3
+	{ "Reduce saberdrops for MP damages" },//4
+	{ "Allow rollcancel for saber swings" },//5
+	{ "Remove chainable swings from red stance" },//6
+	{ "Fixed saberswitch" },//7
+	{ "No aim backslash" },//8
+	{ "JK2 red DFA" },//9
+	{ "Fix yellow DFA" },//10
+	{ "Spin red DFA" },//11
+	{ "Spin backslash" },//12
+	{ "JK2 Lunge" },//13
+	{ "Remove red DFA Boost" },//14
+	{ "Make red DFA cost 0 forcepoints" },//15
+	{ "Remove all backslash restrictions" },//16
+	*/
+	{ "Allow Sabergun" }//17
+};
+
 char	*ConcatArgs( int start );
 
 /*
