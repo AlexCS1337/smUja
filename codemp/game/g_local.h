@@ -132,7 +132,7 @@ extern int gEscapeTime;
 
 //extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is this extern
 
-//sMod tweaks
+//sMod tweaks (too be implemented)
 
 /*
 //Force Tweaks
@@ -171,8 +171,8 @@ extern int gEscapeTime;
 #define ST_REDDFAFIX			(1<<13)
 #define ST_REDDFANOFORCE		(1<<14)
 #define ST_EASIERBACKSLASH		(1<<15)
-*/
 #define ST_SABERGUN				(1<<16)
+*/
 
 /*
 //Saberstyles
@@ -1367,7 +1367,8 @@ extern int gSlowMoDuelTime;
 
 // sMod cvars
 extern vmCvar_t g_allowBlackNames;
-extern vmCvar_t g_tweakSaber;
+extern vmCvar_t g_allowSabergun;
+//extern vmCvar_t g_tweakSaber;
 
 void G_PowerDuelCount(int *loners, int *doubles, qboolean countSpec);
 

@@ -401,9 +401,9 @@ typedef struct bitInfo_S {
 	const char	*string;
 } bitInfo_T;
 
-
+/* //saber tweaks to be implemented
 static bitInfo_T saberTweaks[] = {
-	/*
+	
 	{ "Skip saber interpolate for MP dmgs" },//1
 	{ "JK2 1.02 Style Damage System" },//2
 	{ "Reduced saberblock for MP damages" },//3
@@ -420,9 +420,58 @@ static bitInfo_T saberTweaks[] = {
 	{ "Remove red DFA Boost" },//14
 	{ "Make red DFA cost 0 forcepoints" },//15
 	{ "Remove all backslash restrictions" },//16
-	*/
+	
 	{ "Allow Sabergun" }//17
 };
+static const int MAX_SABER_TWEAKS = ARRAY_LEN(saberTweaks);
+
+void CVU_TweakSaber(void);
+void Svcmd_ToggleTweakSaber_f(void) {
+	if (trap->Argc() == 1) {
+		int i = 0;
+		for (i = 0; i < MAX_SABER_TWEAKS; i++) {
+			if ((g_tweakSaber.integer & (1 << i))) {
+				trap->Print("%2d [X] %s\n", i, saberTweaks[i].string);
+			}
+			else {
+				trap->Print("%2d [ ] %s\n", i, saberTweaks[i].string);
+			}
+		}
+		return;
+	}
+	else {
+		char arg[8] = { 0 };
+		int index;
+		const uint32_t mask = (1 << MAX_SABER_TWEAKS) - 1;
+
+		trap->Argv(1, arg, sizeof(arg));
+		index = atoi(arg);
+
+		//DM Start: New -1 toggle all options.
+		if (index < -1 || index >= MAX_SABER_TWEAKS) {  //Whereas we need to allow -1 now, we must change the limit for this value.
+			trap->Print("tweakSaber: Invalid range: %i [0-%i, or -1 for toggle all]\n", index, MAX_SABER_TWEAKS - 1);
+			return;
+		}
+
+		if (index == -1) {
+			for (index = 0; index < MAX_SABER_TWEAKS; index++) {  //Read every tweak option and set it to the opposite of what it is currently set to.
+				trap->Cvar_Set("g_tweakSaber", va("%i", (1 << index) ^ (g_tweakSaber.integer & mask)));
+				trap->Cvar_Update(&g_tweakSaber);
+				trap->Print("%s %s^7\n", saberTweaks[index].string, ((g_tweakSaber.integer & (1 << index)) ? "^2Enabled" : "^1Disabled"));
+				CVU_TweakSaber();
+			}
+		} //DM End: New -1 toggle all options.
+
+		trap->Cvar_Set("g_tweakSaber", va("%i", (1 << index) ^ (g_tweakSaber.integer & mask)));
+		trap->Cvar_Update(&g_tweakSaber);
+
+		trap->Print("%s %s^7\n", saberTweaks[index].string, ((g_tweakSaber.integer & (1 << index))
+			? "^2Enabled" : "^1Disabled"));
+
+		CVU_TweakSaber();
+	}
+}
+*/
 
 char	*ConcatArgs( int start );
 

@@ -219,7 +219,8 @@ vmCvar_t	g_powerDuelEndHealth;
 // sMod Cvars
 
 vmCvar_t	g_allowBlackNames;
-vmCvar_t	g_tweakSaber;
+//vmCvar_t	g_tweakSaber;
+vmCvar_t	g_allowSabergun;
 
 // nmckenzie: temporary way to show player healths in duels - some iface gfx in game would be better, of course.
 // DUEL_HEALTH
@@ -469,7 +470,8 @@ static cvarTable_t		gameCvarTable[] = {
 
 // sMod cvars
 	{ &g_allowBlackNames, "g_allowBlackNames", "0", CVAR_ARCHIVE, 0, qtrue},
-	{ &g_tweakSaber, "g_tweakSaber", "0", CVAR_ARCHIVE, 0, qtrue}
+	{ &g_allowSabergun, "g_allowSabergun", "1", CVAR_ARCHIVE, 0, qtrue}
+//	{ &g_tweakSaber, "g_tweakSaber", "0", CVAR_ARCHIVE, 0, qtrue}//add in CVU_tweakSaber later
 };
 
 // bk001129 - made static to avoid aliasing
