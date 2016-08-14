@@ -26,7 +26,7 @@ extern vec3_t gPainPoint;
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"basejka"
+#define	GAMEVERSION	"smU"
 
 #define BODY_QUEUE_SIZE		8
 
@@ -1324,6 +1324,10 @@ void DeathmatchScoreboardMessage (gentity_t *client);
 extern vmCvar_t g_ff_objectives;
 extern qboolean gDoSlowMoDuel;
 extern int gSlowMoDuelTime;
+
+//sMod
+extern vmCvar_t g_allowBlackNames;
+extern vmCvar_t g_allowSabergun;
 
 void G_PowerDuelCount(int *loners, int *doubles, qboolean countSpec);
 
