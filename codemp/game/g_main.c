@@ -216,8 +216,7 @@ vmCvar_t	g_austrian;
 vmCvar_t	g_powerDuelStartHealth;
 vmCvar_t	g_powerDuelEndHealth;
 
-// sMod Cvars
-
+// smU Cvars
 vmCvar_t	g_allowBlackNames;
 //vmCvar_t	g_tweakSaber;
 vmCvar_t	g_allowSabergun;
@@ -468,7 +467,7 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_powerDuelStartHealth, "g_powerDuelStartHealth", "150", CVAR_ARCHIVE, 0, qtrue  },
 	{ &g_powerDuelEndHealth, "g_powerDuelEndHealth", "90", CVAR_ARCHIVE, 0, qtrue  },
 
-// sMod cvars
+// smU cvars
 	{ &g_allowBlackNames, "g_allowBlackNames", "0", CVAR_ARCHIVE, 0, qtrue},
 	{ &g_allowSabergun, "g_allowSabergun", "1", CVAR_ARCHIVE, 0, qtrue}
 //	{ &g_tweakSaber, "g_tweakSaber", "0", CVAR_ARCHIVE, 0, qtrue}//add in CVU_tweakSaber later

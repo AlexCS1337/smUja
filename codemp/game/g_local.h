@@ -1365,7 +1365,7 @@ extern vmCvar_t g_ff_objectives;
 extern qboolean gDoSlowMoDuel;
 extern int gSlowMoDuelTime;
 
-// sMod cvars
+// smU cVars
 extern vmCvar_t g_allowBlackNames;
 extern vmCvar_t g_allowSabergun;
 //extern vmCvar_t g_tweakSaber;
