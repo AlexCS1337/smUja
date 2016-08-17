@@ -1369,6 +1369,8 @@ extern int gSlowMoDuelTime;
 extern vmCvar_t g_allowBlackNames;
 extern vmCvar_t g_allowSabergun;
 //extern vmCvar_t g_tweakSaber;
+extern vmCvar_t g_duelStartHealth;
+extern vmCvar_t g_duelStartArmor;
 
 void G_PowerDuelCount(int *loners, int *doubles, qboolean countSpec);
 
