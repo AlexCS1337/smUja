@@ -26,7 +26,7 @@ extern vec3_t gPainPoint;
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"sMod"
+#define	GAMEVERSION	"smU"
 
 #define BODY_QUEUE_SIZE		8
 
