@@ -122,6 +122,7 @@ qboolean	CheatsOk( gentity_t *ent ) {
 /*
 ==================
 DebugOk
+This allows debug commands if g_allowDebug is set
 ==================
 */
 qboolean	DebugOk(gentity_t *ent) {
@@ -3584,6 +3585,10 @@ void ClientCommand( int clientNum ) {
 	}
 	//end bot debug cmds
 #ifndef FINAL_BUILD
+	else if (Q_stricmp(cmd, "debugSetSaberMove") < 0) //|| "debugSetSaberMove" > 999)
+	{
+		return;
+	}
 	else if (Q_stricmp(cmd, "debugSetSaberMove") == 0 && DebugOk(ent))
 	{
 		Cmd_DebugSetSaberMove_f(ent);
