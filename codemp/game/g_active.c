@@ -1666,14 +1666,14 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 	{ //hack, don't do while moving
 		return;
 	}
-	if ( taunt != TAUNT_TAUNT )
+	/*if ( taunt != TAUNT_TAUNT )
 	{//normal taunt always allowed
 		if ( g_gametype.integer != GT_DUEL
 			&& g_gametype.integer != GT_POWERDUEL )
 		{//no taunts unless in Duel
 			return;
 		}
-	}
+	}*/
 	if ( ent->client->ps.torsoTimer < 1 
 		&& ent->client->ps.forceHandExtend == HANDEXTEND_NONE 
 		&& ent->client->ps.legsTimer < 1 
