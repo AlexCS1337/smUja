@@ -3585,18 +3585,18 @@ void ClientCommand( int clientNum ) {
 	}
 	//end bot debug cmds
 #ifndef FINAL_BUILD
-	else if (Q_stricmp(cmd, "debugSetSaberMove") < 0 || Q_stricmp(cmd, "debugSetSaberMove") > 999)
+	/*else if (Q_stricmp(cmd, "debugSetSaberMove") < 0 || Q_stricmp(cmd, "debugSetSaberMove") > 999)
 	{
 		return;
-	}
+	}*/
 	else if (Q_stricmp(cmd, "debugSetSaberMove") == 0 && DebugOk(ent))
 	{
 		Cmd_DebugSetSaberMove_f(ent);
 	}
-	else if (Q_stricmp(cmd, "debugSetBodyAnin") < 0 || Q_stricmp(cmd, "debugSetBodyAnim") > 999)
+	/*else if (Q_stricmp(cmd, "debugSetBodyAnin") < 0 || Q_stricmp(cmd, "debugSetBodyAnim") > 999)
 	{
 		return;
-	}
+	}*/
 	else if (Q_stricmp(cmd, "debugSetBodyAnim") == 0 && DebugOk(ent))
 	{
 		Cmd_DebugSetBodyAnim_f(ent, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
