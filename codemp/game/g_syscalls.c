@@ -110,7 +110,7 @@ void trap_SendServerCommand( int clientNum, const char *text ) {
 	// client upon receipt, so ignore them 
 	if (strlen(text) > 1022) {
 		G_LogPrintf("trap_SendServerCommand( %d, ... ) length exceeds 1022.\n", clientNum);
-		G_LogPrintf("text [%s]\n", text);
+		//G_LogPrintf("text [%s]\n", text);
 		return;
 	}
 	syscall( G_SEND_SERVER_COMMAND, clientNum, text );
