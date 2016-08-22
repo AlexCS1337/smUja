@@ -1218,13 +1218,18 @@ void QDECL Com_Error ( int level, const char *error, ... ) {
 
 void QDECL Com_Printf( const char *msg, ... ) {
 	va_list		argptr;
-	char		text[1024];
+	char		text[4096] = {0};
+	int			ret;
 
 	va_start (argptr, msg);
-	vsprintf (text, msg, argptr);
+	ret = vsprintf (text, msg, argptr);
 	va_end (argptr);
 
-	G_Printf ("%s", text);
+	if (ret == -1)
+		G_Printf("G_Printf: overflow of 4096 bytes buffer\n");
+	else
+		G_Printf("%s", text);
+	//G_Printf ("%s", text);
 }
 
 #endif

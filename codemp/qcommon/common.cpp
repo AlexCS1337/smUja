@@ -138,8 +138,9 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 			*rd_buffer = 0;
 		}
 		Q_strcat(rd_buffer, rd_buffersize, msg);
-		rd_flush(rd_buffer);			
-		*rd_buffer = 0;
+		// TTimo nooo .. that would defeat the purpose
+		//rd_flush(rd_buffer);			
+		//*rd_buffer = 0;
 		return;
 	}
 
