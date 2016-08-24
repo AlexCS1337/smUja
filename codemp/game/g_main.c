@@ -227,6 +227,7 @@ vmCvar_t g_allowBlackNames;
 vmCvar_t g_allowSabergun;
 vmCvar_t g_duelStartHealth;
 vmCvar_t g_duelStartArmor;
+vmCvar_t g_allowDebug;
 
 // nmckenzie: temporary way to show player healths in duels - some iface gfx in game would be better, of course.
 // DUEL_HEALTH
@@ -483,7 +484,8 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_allowBlackNames, "g_allowBlackNames", "0", CVAR_SERVERINFO, 0, qtrue },
 	{ &g_allowSabergun, "g_allowSabergun", "0", CVAR_SERVERINFO, 0, qtrue },
 	{ &g_duelStartHealth, "g_duelStartHealth", "0", CVAR_SERVERINFO, 0, qfalse },
-	{ &g_duelStartArmor, "g_duelStartArmor", "0", CVAR_SERVERINFO, 0, qfalse }
+	{ &g_duelStartArmor, "g_duelStartArmor", "0", CVAR_SERVERINFO, 0, qfalse },
+	{ &g_allowDebug, "g_allowDebug", "0", CVAR_SERVERINFO, 0, qtrue }
 };
 
 // bk001129 - made static to avoid aliasing
