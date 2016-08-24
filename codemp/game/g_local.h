@@ -1325,9 +1325,11 @@ extern vmCvar_t g_ff_objectives;
 extern qboolean gDoSlowMoDuel;
 extern int gSlowMoDuelTime;
 
-//sMod
+//sMu
 extern vmCvar_t g_allowBlackNames;
 extern vmCvar_t g_allowSabergun;
+extern vmCvar_t g_duelStartHealth;
+extern vmCvar_t g_duelStartArmor;
 
 void G_PowerDuelCount(int *loners, int *doubles, qboolean countSpec);
 

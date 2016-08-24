@@ -2952,7 +2952,8 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 		return;
 	}
 
-	//New: Don't let a player duel if he just did and hasn't waited 10 seconds yet (note: If someone challenges him, his duel timer will reset so he can accept)
+	// Commented out to allow multiple duels in FFA etc
+	/*//New: Don't let a player duel if he just did and hasn't waited 10 seconds yet (note: If someone challenges him, his duel timer will reset so he can accept)
 	if (ent->client->ps.fd.privateDuelTime > level.time)
 	{
 		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "CANTDUEL_JUSTDID")) );
@@ -2963,7 +2964,7 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 	{
 		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "CANTDUEL_BUSY")) );
 		return;
-	}
+	}*/
 
 	AngleVectors( ent->client->ps.viewangles, forward, NULL, NULL );
 
@@ -3033,12 +3034,19 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 				challenged->client->ps.weaponTime = 400;
 				challenged->client->ps.saberHolstered = 2;
 			}
+			if (g_duelStartHealth.integer)
+			{
+				ent->health = ent->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer;
+				ent->client->ps.stats[STAT_ARMOR] = g_duelStartArmor.integer;
+				challenged->health = challenged->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer;
+				challenged->client->ps.stats[STAT_ARMOR] = g_duelStartArmor.integer;
+			}
 		}
 		else
 		{
 			//Print the message that a player has been challenged in private, only announce the actual duel initiation in private
-			trap_SendServerCommand( challenged-g_entities, va("cp \"%s %s\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE")) );
-			trap_SendServerCommand( ent-g_entities, va("cp \"%s %s\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname) );
+			trap_SendServerCommand( challenged-g_entities, va("cp \"%s ^7%s\n^2(Saber Duel)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE")) );
+			trap_SendServerCommand( ent-g_entities, va("cp \"%s ^7%s\n^2(Saber Duel)\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname) );
 		}
 
 		challenged->client->ps.fd.privateDuelTime = 0; //reset the timer in case this player just got out of a duel. He should still be able to accept the challenge.
