@@ -123,7 +123,7 @@ qboolean	CheatsOk( gentity_t *ent ) {
 DebugOk
 ==================
 */
-qboolean	CheatsOk(gentity_t *ent) {
+qboolean	DebugOk(gentity_t *ent) {
 	if (!g_allowDebug.integer) {
 		trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOCHEATS")));
 		return qfalse;
