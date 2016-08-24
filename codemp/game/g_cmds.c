@@ -118,6 +118,19 @@ qboolean	CheatsOk( gentity_t *ent ) {
 	return qtrue;
 }
 
+/*
+==================
+DebugOk
+==================
+*/
+qboolean	CheatsOk(gentity_t *ent) {
+	if (!g_allowDebug.integer) {
+		trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOCHEATS")));
+		return qfalse;
+	}
+	return qtrue;
+}
+
 
 /*
 ==================
@@ -3748,15 +3761,15 @@ void ClientCommand( int clientNum ) {
 	}
 	//end bot debug cmds
 #ifndef FINAL_BUILD
-	else if (Q_stricmp(cmd, "debugSetSaberMove") == 0)
+	else if (Q_stricmp(cmd, "debugSetSaberMove") == 0 && DebugOk(ent))
 	{
 		Cmd_DebugSetSaberMove_f(ent);
 	}
-	else if (Q_stricmp(cmd, "debugSetBodyAnim") == 0)
+	else if (Q_stricmp(cmd, "debugSetBodyAnim") == 0 && DebugOk(ent))
 	{
 		Cmd_DebugSetBodyAnim_f(ent, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 	}
-	else if (Q_stricmp(cmd, "debugDismemberment") == 0)
+	else if (Q_stricmp(cmd, "debugDismemberment") == 0 && DebugOk(ent))
 	{
 		Cmd_Kill_f (ent);
 		if (ent->health < 1)
@@ -3777,7 +3790,7 @@ void ClientCommand( int clientNum ) {
 			DismembermentByNum(ent, iArg);
 		}
 	}
-	else if (Q_stricmp(cmd, "debugDropSaber") == 0)
+	else if (Q_stricmp(cmd, "debugDropSaber") == 0 && DebugOk(ent))
 	{
 		if (ent->client->ps.weapon == WP_SABER &&
 			ent->client->ps.saberEntityNum &&
@@ -3786,7 +3799,7 @@ void ClientCommand( int clientNum ) {
 			saberKnockOutOfHand(&g_entities[ent->client->ps.saberEntityNum], ent, vec3_origin);
 		}
 	}
-	else if (Q_stricmp(cmd, "debugKnockMeDown") == 0)
+	else if (Q_stricmp(cmd, "debugKnockMeDown") == 0 && DebugOk(ent))
 	{
 		if (BG_KnockDownable(&ent->client->ps))
 		{
@@ -3804,7 +3817,7 @@ void ClientCommand( int clientNum ) {
 			}
 		}
 	}
-	else if (Q_stricmp(cmd, "debugSaberSwitch") == 0)
+	else if (Q_stricmp(cmd, "debugSaberSwitch") == 0 && DebugOk(ent))
 	{
 		gentity_t *targ = NULL;
 
@@ -3830,7 +3843,7 @@ void ClientCommand( int clientNum ) {
 			Cmd_ToggleSaber_f(targ);
 		}
 	}
-	else if (Q_stricmp(cmd, "debugIKGrab") == 0)
+	else if (Q_stricmp(cmd, "debugIKGrab") == 0 && DebugOk(ent))
 	{
 		gentity_t *targ = NULL;
 
@@ -3856,7 +3869,7 @@ void ClientCommand( int clientNum ) {
 			targ->client->ps.heldByClient = ent->s.number+1;
 		}
 	}
-	else if (Q_stricmp(cmd, "debugIKBeGrabbedBy") == 0)
+	else if (Q_stricmp(cmd, "debugIKBeGrabbedBy") == 0 && DebugOk(ent))
 	{
 		gentity_t *targ = NULL;
 
@@ -3882,7 +3895,7 @@ void ClientCommand( int clientNum ) {
 			ent->client->ps.heldByClient = targ->s.number+1;
 		}
 	}
-	else if (Q_stricmp(cmd, "debugIKRelease") == 0)
+	else if (Q_stricmp(cmd, "debugIKRelease") == 0 && DebugOk(ent))
 	{
 		gentity_t *targ = NULL;
 
@@ -3908,7 +3921,7 @@ void ClientCommand( int clientNum ) {
 			targ->client->ps.heldByClient = 0;
 		}
 	}
-	else if (Q_stricmp(cmd, "debugThrow") == 0)
+	else if (Q_stricmp(cmd, "debugThrow") == 0 && DebugOk(ent))
 	{
 		trace_t tr;
 		vec3_t tTo, fwd;
@@ -4072,7 +4085,7 @@ void ClientCommand( int clientNum ) {
 	}
 #endif
 #ifndef FINAL_BUILD
-	else if (Q_stricmp(cmd, "debugShipDamage") == 0)
+	else if (Q_stricmp(cmd, "debugShipDamage") == 0 && DebugOk(ent))
 	{
 		char	arg[MAX_STRING_CHARS];
 		char	arg2[MAX_STRING_CHARS];
