@@ -129,15 +129,12 @@ void SP_target_score( gentity_t *ent ) {
 "wait"		don't fire off again if triggered within this many milliseconds ago
 If "private", only the activator gets the message.  If no checks, all clients get the message.
 */
-void Use_Target_Print (gentity_t *ent, gentity_t *other, gentity_t *activator)
+void Use_Target_Print(gentity_t *ent, gentity_t *other, gentity_t *activator)
 {
 	if (!ent || !ent->inuse)
 	{
-		Com_Error(ERR_DROP, "Bad ent in Use_Target_Print");
-	}
-	else if (!activator || !activator->inuse)
-	{
-		Com_Error(ERR_DROP, "Bad activator in Use_Target_Print");
+		Com_Printf("ERROR: Bad ent in Use_Target_Print");
+		return;
 	}
 
 	if (ent->wait)
@@ -148,64 +145,86 @@ void Use_Target_Print (gentity_t *ent, gentity_t *other, gentity_t *activator)
 		}
 		ent->genericValue14 = level.time + ent->wait;
 	}
-
-#ifndef FINAL_BUILD
-	if (ent->genericValue15 > level.time)
+	if (0)
 	{
-		Com_Printf("TARGET PRINT ERRORS:\n");
-		if (activator && activator->classname && activator->classname[0])
+#ifndef FINAL_BUILD
+		if (!ent || !ent->inuse)
 		{
-			Com_Printf("activator classname: %s\n", activator->classname);
+			//	Com_Error(ERR_DROP, "Bad ent in Use_Target_Print");
+			return;
 		}
-		if (activator && activator->target && activator->target[0])
+		else if (!activator || !activator->inuse)
 		{
-			Com_Printf("activator target: %s\n", activator->target);
+			//	Com_Error(ERR_DROP, "Bad activator in Use_Target_Print");
+			return;
 		}
-		if (activator && activator->targetname && activator->targetname[0])
-		{
-			Com_Printf("activator targetname: %s\n", activator->targetname);
-		}
-		if (ent->targetname && ent->targetname[0])
-		{
-			Com_Printf("print targetname: %s\n", ent->targetname);
-		}
-		Com_Error(ERR_DROP, "target_print used in quick succession, fix it! See the console for details.");
-	}
-	ent->genericValue15 = level.time + 5000;
-#endif
 
-	G_ActivateBehavior(ent,BSET_USE);
-	if ( activator->client && ( ent->spawnflags & 4 ) ) {
-		if (ent->message[0] == '@' && ent->message[1] != '@')
+		if (ent->genericValue15 > level.time)
 		{
-			trap_SendServerCommand( activator-g_entities, va("cps \"%s\"", ent->message ));
+			Com_Printf("TARGET PRINT ERRORS:\n");
+			if (activator && activator->classname && activator->classname[0])
+			{
+				Com_Printf("activator classname: %s\n", activator->classname);
+			}
+			if (activator && activator->target && activator->target[0])
+			{
+				Com_Printf("activator target: %s\n", activator->target);
+			}
+			if (activator && activator->targetname && activator->targetname[0])
+			{
+				Com_Printf("activator targetname: %s\n", activator->targetname);
+			}
+			if (ent->targetname && ent->targetname[0])
+			{
+				Com_Printf("print targetname: %s\n", ent->targetname);
+			}
+			Com_Error(ERR_DROP, "target_print used in quick succession, fix it! See the console for details.");
 		}
-		else
+		ent->genericValue15 = level.time + 5000;
+#endif
+	}
+
+	G_ActivateBehavior(ent, BSET_USE);
+	if ((ent->spawnflags & 4))
+	{//private, to one client only
+		if (!activator || !activator->inuse)
 		{
-			trap_SendServerCommand( activator-g_entities, va("cp \"%s\"", ent->message ));
+			Com_Printf("ERROR: Bad activator in Use_Target_Print");
 		}
+		if (activator && activator->client)
+		{//make sure there's a valid client ent to send it to
+			if (ent->message[0] == '@' && ent->message[1] != '@')
+			{
+				trap_SendServerCommand(activator - g_entities, va("cps \"%s\"", ent->message));
+			}
+			else
+			{
+				trap_SendServerCommand(activator - g_entities, va("cp \"%s\"", ent->message));
+			}
+		}
+		//NOTE: change in functionality - if there *is* no valid client ent, it won't send it to anyone at all
 		return;
 	}
 
-	if ( ent->spawnflags & 3 ) {
-		if ( ent->spawnflags & 1 ) {
+	if (ent->spawnflags & 3) {
+		if (ent->spawnflags & 1) {
 			if (ent->message[0] == '@' && ent->message[1] != '@')
 			{
-				G_TeamCommand( TEAM_RED, va("cps \"%s\"", ent->message) );
+				G_TeamCommand(TEAM_RED, va("cps \"%s\"", ent->message));
 			}
 			else
 			{
-				G_TeamCommand( TEAM_RED, va("cp \"%s\"", ent->message) );
+				G_TeamCommand(TEAM_RED, va("cp \"%s\"", ent->message));
 			}
 		}
-		if ( ent->spawnflags & 2 ) {
+		if (ent->spawnflags & 2) {
 			if (ent->message[0] == '@' && ent->message[1] != '@')
 			{
-				G_TeamCommand( TEAM_BLUE, va("cps \"%s\"", ent->message) );
+				G_TeamCommand(TEAM_BLUE, va("cps \"%s\"", ent->message));
 			}
 			else
 			{
-				G_TeamCommand( TEAM_BLUE, va("cp \"%s\"", ent->message) );
+				G_TeamCommand(TEAM_BLUE, va("cp \"%s\"", ent->message));
 			}
 		}
 		return;
@@ -213,18 +232,17 @@ void Use_Target_Print (gentity_t *ent, gentity_t *other, gentity_t *activator)
 
 	if (ent->message[0] == '@' && ent->message[1] != '@')
 	{
-		trap_SendServerCommand( -1, va("cps \"%s\"", ent->message ));
+		trap_SendServerCommand(-1, va("cps \"%s\"", ent->message));
 	}
 	else
 	{
-		trap_SendServerCommand( -1, va("cp \"%s\"", ent->message ));
+		trap_SendServerCommand(-1, va("cp \"%s\"", ent->message));
 	}
 }
 
-void SP_target_print( gentity_t *ent ) {
+void SP_target_print(gentity_t *ent) {
 	ent->use = Use_Target_Print;
 }
-
 
 //==========================================================
 
