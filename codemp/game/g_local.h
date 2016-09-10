@@ -480,6 +480,9 @@ typedef struct {
 	char		saber2Type[64];
 	int			duelTeam;
 	int			siegeDesiredTeam;
+
+	// smU serverside
+	qboolean	sawMOTD; //smU, has the client been shown the MOTD?
 } clientSession_t;
 
 // playerstate mGameFlags
@@ -789,6 +792,10 @@ struct gclient_s {
 
 	//fallen duelist
 	qboolean	iAmALoser;
+
+	//smU stuff
+	char	csMessage[MAX_STRING_CHARS]; // smU - Message to say CenterScreen
+	short	csTimeLeft; // smU - Time left for client's CenterScreen
 
 	int			lastGenCmd;
 	int			lastGenCmdTime;
@@ -1372,6 +1379,10 @@ extern vmCvar_t g_allowSabergun;
 extern vmCvar_t g_duelStartHealth;
 extern vmCvar_t g_duelStartArmor;
 extern vmCvar_t g_allowDebug;
+extern vmCvar_t g_consoleMOTD;
+extern vmCvar_t g_centerMOTDTime;
+extern vmCvar_t g_centerMOTD;
+extern vmCvar_t g_playerLog;
 
 void G_PowerDuelCount(int *loners, int *doubles, qboolean countSpec);
 

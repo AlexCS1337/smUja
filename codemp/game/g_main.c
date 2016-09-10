@@ -223,6 +223,10 @@ vmCvar_t	g_allowSabergun;
 vmCvar_t	g_duelStartHealth;
 vmCvar_t	g_duelStartArmor;
 vmCvar_t	g_allowDebug;
+vmCvar_t	g_consoleMOTD;
+vmCvar_t	g_centerMOTDTime;
+vmCvar_t	g_centerMOTD;
+vmCvar_t	g_playerLog;
 
 // nmckenzie: temporary way to show player healths in duels - some iface gfx in game would be better, of course.
 // DUEL_HEALTH
@@ -477,6 +481,10 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_duelStartHealth, "g_duelStartHealth", "0", CVAR_ARCHIVE, 0, qfalse},
 	{ &g_duelStartArmor, "g_duelStartArmor", "0", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_allowDebug, "g_allowDebug", "0", CVAR_ARCHIVE, 0, qtrue },
+	{ &g_consoleMOTD, "g_consoleMOTD", "", CVAR_ARCHIVE, 0, qfalse },
+	{ &g_centerMOTDTime, "g_centerMOTDTime", "5", CVAR_ARCHIVE, 0, qfalse },
+	{ &g_centerMOTD, "g_centerMOTD", "", CVAR_ARCHIVE, 0, qfalse },
+	{ &g_playerLog, "g_playerLog", "0", CVAR_ARCHIVE, 0, qtrue }
 };
 
 // bk001129 - made static to avoid aliasing
