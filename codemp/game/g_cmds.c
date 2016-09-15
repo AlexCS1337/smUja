@@ -1308,7 +1308,7 @@ argCheck:
 
 		trap_Argv( 1, arg, sizeof( arg ) );
 
-		if (arg && arg[0])
+		if (arg[0])
 		{ //if there's an arg, assume it's a combo team command from the UI.
 			Cmd_Team_f(ent);
 		}

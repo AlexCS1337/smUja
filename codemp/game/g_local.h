@@ -154,7 +154,7 @@ extern int gEscapeTime;
 */
 
 //Saber tweaks
-/*
+
 #define	ST_NO_MP_SABERLERP		(1<<0)
 #define ST_JK2_DMGSYSTEM		(1<<1)
 #define ST_REDUCE_SABERBLOCK	(1<<2)
@@ -172,7 +172,6 @@ extern int gEscapeTime;
 #define ST_REDDFANOFORCE		(1<<14)
 #define ST_EASIERBACKSLASH		(1<<15)
 #define ST_SABERGUN				(1<<16)
-*/
 
 /*
 //Saberstyles
@@ -1372,12 +1371,16 @@ extern vmCvar_t g_ff_objectives;
 extern qboolean gDoSlowMoDuel;
 extern int gSlowMoDuelTime;
 
-// smU cVars
-extern vmCvar_t g_allowBlackNames;
+// smU - Saber
 extern vmCvar_t g_allowSabergun;
-//extern vmCvar_t g_tweakSaber;
+extern vmCvar_t g_tweakSaber;
+
+// smU - Duels
 extern vmCvar_t g_duelStartHealth;
 extern vmCvar_t g_duelStartArmor;
+
+// smU - Other
+extern vmCvar_t g_allowBlackNames;
 extern vmCvar_t g_allowDebug;
 extern vmCvar_t g_consoleMOTD;
 extern vmCvar_t g_centerMOTDTime;

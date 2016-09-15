@@ -216,12 +216,16 @@ vmCvar_t	g_austrian;
 vmCvar_t	g_powerDuelStartHealth;
 vmCvar_t	g_powerDuelEndHealth;
 
-// smU Cvars
-vmCvar_t	g_allowBlackNames;
-//vmCvar_t	g_tweakSaber;
+// smU - Saber
+vmCvar_t	g_tweakSaber;
 vmCvar_t	g_allowSabergun;
+
+// smU - Duels
 vmCvar_t	g_duelStartHealth;
 vmCvar_t	g_duelStartArmor;
+
+// smU - Other
+vmCvar_t	g_allowBlackNames;
 vmCvar_t	g_allowDebug;
 vmCvar_t	g_consoleMOTD;
 vmCvar_t	g_centerMOTDTime;
@@ -474,12 +478,16 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_powerDuelStartHealth, "g_powerDuelStartHealth", "150", CVAR_ARCHIVE, 0, qtrue  },
 	{ &g_powerDuelEndHealth, "g_powerDuelEndHealth", "90", CVAR_ARCHIVE, 0, qtrue  },
 
-// smU cvars
-	{ &g_allowBlackNames, "g_allowBlackNames", "0", CVAR_ARCHIVE, 0, qtrue},
-	{ &g_allowSabergun, "g_allowSabergun", "1", CVAR_ARCHIVE, 0, qtrue},
-//	{ &g_tweakSaber, "g_tweakSaber", "0", CVAR_ARCHIVE, 0, qtrue}//add in CVU_tweakSaber later
-	{ &g_duelStartHealth, "g_duelStartHealth", "0", CVAR_ARCHIVE, 0, qfalse},
+// smU - Saber
+	{ &g_allowSabergun, "g_allowSabergun", "1", CVAR_ARCHIVE, 0, qtrue },
+	{ &g_tweakSaber, "g_tweakSaber", "0", CVAR_ARCHIVE, 0, qtrue}//add in CVU_tweakSaber later
+
+// smU - Duels
+	{ &g_duelStartHealth, "g_duelStartHealth", "0", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_duelStartArmor, "g_duelStartArmor", "0", CVAR_ARCHIVE, 0, qfalse },
+
+// smU - Other
+	{ &g_allowBlackNames, "g_allowBlackNames", "0", CVAR_ARCHIVE, 0, qtrue},
 	{ &g_allowDebug, "g_allowDebug", "0", CVAR_ARCHIVE, 0, qtrue },
 	{ &g_consoleMOTD, "g_consoleMOTD", "", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_centerMOTDTime, "g_centerMOTDTime", "5", CVAR_ARCHIVE, 0, qfalse },
