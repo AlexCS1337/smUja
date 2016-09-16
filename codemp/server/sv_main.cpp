@@ -40,6 +40,15 @@ cvar_t	*sv_floodProtect;
 cvar_t	*sv_allowAnonymous;
 cvar_t	*sv_needpass;
 
+// smU's toggleable fixes
+cvar_t	*sv_fixnamecrash;
+cvar_t	*sv_fixforcecrash;
+cvar_t	*sv_fixbrokenmodels;
+cvar_t	*sv_fixturretcrash;
+cvar_t	*sv_blockchargejump;
+cvar_t	*sv_blockspeedhack;
+cvar_t	*sv_fixsaberstealing;
+
 /*
 =============================================================================
 

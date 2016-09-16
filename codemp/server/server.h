@@ -262,6 +262,15 @@ extern	cvar_t	*sv_floodProtect;
 extern	cvar_t	*sv_allowAnonymous;
 extern	cvar_t	*sv_needpass;
 
+// toggleable fixes
+extern	cvar_t	*sv_fixnamecrash;
+extern	cvar_t	*sv_fixforcecrash;
+extern	cvar_t	*sv_fixbrokenmodels;
+extern	cvar_t	*sv_fixturretcrash;
+extern	cvar_t	*sv_blockchargejump;
+extern	cvar_t	*sv_blockspeedhack;
+extern	cvar_t	*sv_fixsaberstealing;
+
 
 //===========================================================
 

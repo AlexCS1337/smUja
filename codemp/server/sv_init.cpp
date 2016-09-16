@@ -803,6 +803,15 @@ void SV_BotInitBotLib(void);
 void SV_Init (void) {
 	SV_AddOperatorCommands ();
 
+	// todo: add the other commands and set default to 1
+	sv_fixnamecrash = Cvar_Get("sv_fixnamecrash", "0", CVAR_ARCHIVE);
+	sv_fixforcecrash = Cvar_Get("sv_fixforcecrash", "1", CVAR_ARCHIVE);
+	sv_fixbrokenmodels = Cvar_Get("sv_fixbrokenmodels", "0", CVAR_ARCHIVE);
+	sv_fixturretcrash = Cvar_Get("sv_fixturretcrash", "0", CVAR_ARCHIVE);
+	sv_blockchargejump = Cvar_Get("sv_blockchargejump", "0", CVAR_ARCHIVE);
+	sv_blockspeedhack = Cvar_Get("sv_blockspeedhack", "0", CVAR_ARCHIVE);
+	sv_fixsaberstealing = Cvar_Get("sv_fixsaberstealing", "0", CVAR_ARCHIVE);
+
 	// serverinfo vars
 	Cvar_Get ("dmflags", "0", CVAR_SERVERINFO);
 	Cvar_Get ("fraglimit", "20", CVAR_SERVERINFO);

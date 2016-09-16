@@ -1497,6 +1497,98 @@ void SV_UserinfoChanged( client_t *cl ) {
 	} else {
 		cl->snapshotMsec = 50;
 	}
+
+	// forcecrash fix
+	if (sv_fixforcecrash->integer ) {//&& !(sv.fixes & SVFIX_FORCECRASH)) {
+		char forcePowers[30];
+		Q_strncpyz(forcePowers, Info_ValueForKey(cl->userinfo, "forcepowers"), sizeof(forcePowers));
+
+		int len = (int)strlen(forcePowers);
+		bool badForce = false;
+		if (len >= 22 && len <= 24) {
+			byte seps = 0;
+
+			for (int i = 0; i < len; i++) {
+				if (forcePowers[i] != '-' && (forcePowers[i] < '0' || forcePowers[i] > '9')) {
+					badForce = true;
+					break;
+				}
+
+				if (forcePowers[i] == '-' && (i < 1 || i > 5)) {
+					badForce = true;
+					break;
+				}
+
+				if (i && forcePowers[i - 1] == '-' && forcePowers[i] == '-') {
+					badForce = true;
+					break;
+				}
+
+				if (forcePowers[i] == '-') {
+					seps++;
+				}
+			}
+
+			if (seps != 2) {
+				badForce = true;
+			}
+		}
+		else {
+			badForce = true;
+		}
+
+		if (badForce) {
+			Q_strncpyz(forcePowers, "7-1-030000000000003332", sizeof(forcePowers));
+		}
+
+		if (!Info_SetValueForKey(cl->userinfo, "forcepowers", forcePowers))
+		{
+			{
+				SV_DropClient(cl, "userinfo string length exceeded");
+				return;
+			}
+		}
+	}
+
+	/*// serverside galaking fix
+	if (mv_fixgalaking->integer && !(sv.fixes & MVFIX_GALAKING)) {
+		char model[80];
+
+		Q_strncpyz(model, Info_ValueForKey(cl->userinfo, "model"), sizeof(model));
+		if (!Q_stricmp(model, "galak_mech") || !Q_stricmpn(model, "galak_mech/", 11))
+		{
+			if (!Info_SetValueForKey(cl->userinfo, "model", "galak/default"))
+			{
+				SV_DropClient(cl, "userinfo string length exceeded");
+				return;
+			}
+		}
+
+		Q_strncpyz(model, Info_ValueForKey(cl->userinfo, "team_model"), sizeof(model));
+		if (!Q_stricmp(model, "galak_mech") || !Q_stricmpn(model, "galak_mech/", 11))
+		{
+			if (!Info_SetValueForKey(cl->userinfo, "team_model", "galak/default"))
+			{
+				SV_DropClient(cl, "userinfo string length exceeded");
+				return;
+			}
+		}
+	}
+
+	// serverside broken models fix (head only model)
+	if (mv_fixbrokenmodels->integer && !(sv.fixes & MVFIX_BROKENMODEL)) {
+		char model[80];
+
+		Q_strncpyz(model, Info_ValueForKey(cl->userinfo, "model"), sizeof(model));
+		if (!Q_stricmpn(model, "kyle/fpls", 9) || !Q_stricmp(model, "morgan") || (!Q_stricmpn(model, "morgan/", 7) && (Q_stricmp(model, "morgan/default_mp") && Q_stricmp(model, "morgan/red") && Q_stricmp(model, "morgan/blue"))))
+		{
+			if (!Info_SetValueForKey(cl->userinfo, "model", "kyle/default"))
+			{
+				SV_DropClient(cl, "userinfo string length exceeded");
+				return;
+			}
+		}*/
+
 }
 
 #define INFO_CHANGE_MIN_INTERVAL	6000 //6 seconds is reasonable I suppose
