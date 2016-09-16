@@ -481,7 +481,7 @@ static cvarTable_t		gameCvarTable[] = {
 
 // smU - Saber
 	{ &g_allowSabergun, "g_allowSabergun", "1", CVAR_ARCHIVE, 0, qtrue },
-	{ &g_tweakSaber, "g_tweakSaber", "0", CVAR_ARCHIVE, 0, qtrue}//add in CVU_tweakSaber later
+	{ &g_tweakSaber, "g_tweakSaber", "0", CVAR_ARCHIVE, 0, qtrue},//add in CVU_tweakSaber later
 
 // smU - Dueling
 	{ &g_duelStartHealth, "g_duelStartHealth", "0", CVAR_ARCHIVE, 0, qfalse },

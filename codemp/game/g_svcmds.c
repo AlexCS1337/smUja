@@ -467,9 +467,9 @@ void Svcmd_ToggleTweakSaber_f(void) {
 		trap_Print("%s %s^7\n", saberTweaks[index].string, ((g_tweakSaber.integer & (1 << index))
 			? "^2Enabled" : "^1Disabled"));
 
-		CVU_TweakSaber();*/
+		CVU_TweakSaber();
 	}
-}
+}*/
 
 char	*ConcatArgs( int start );
 
