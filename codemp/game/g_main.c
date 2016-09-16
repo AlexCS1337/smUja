@@ -220,9 +220,10 @@ vmCvar_t	g_powerDuelEndHealth;
 vmCvar_t	g_tweakSaber;
 vmCvar_t	g_allowSabergun;
 
-// smU - Duels
+// smU - Dueling
 vmCvar_t	g_duelStartHealth;
 vmCvar_t	g_duelStartArmor;
+vmCvar_t	g_duelDistanceLimit;
 
 // smU - Other
 vmCvar_t	g_allowBlackNames;
@@ -482,9 +483,10 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_allowSabergun, "g_allowSabergun", "1", CVAR_ARCHIVE, 0, qtrue },
 	{ &g_tweakSaber, "g_tweakSaber", "0", CVAR_ARCHIVE, 0, qtrue}//add in CVU_tweakSaber later
 
-// smU - Duels
+// smU - Dueling
 	{ &g_duelStartHealth, "g_duelStartHealth", "0", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_duelStartArmor, "g_duelStartArmor", "0", CVAR_ARCHIVE, 0, qfalse },
+	{ &g_duelDistanceLimit, "g_duelDistanceLimit", "0", CVAR_ARCHIVE, 0, qtrue },
 
 // smU - Other
 	{ &g_allowBlackNames, "g_allowBlackNames", "0", CVAR_ARCHIVE, 0, qtrue},
