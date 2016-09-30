@@ -28,6 +28,15 @@ extern vec3_t gPainPoint;
 // the "gameversion" client command will print this plus compile date
 #define	GAMEVERSION	"smU"
 
+#define SECURITY_LOG "security.log"
+#define DUEL_LOG "duels.log" //duellog
+#define RACE_LOG "races.log" //racelog
+#if !_NEWRACERANKING
+#define TEMP_RACE_LOG "currentRaces.tmp" //racelog
+#endif
+#define TEMP_STAT_LOG "currentStats.tmp" //racelog
+#define	PLAYER_LOG "players.log" //Name, IP, Guid
+
 #define BODY_QUEUE_SIZE		8
 
 #ifndef INFINITE
@@ -130,7 +139,7 @@ extern void *g2SaberInstance;
 extern qboolean gEscaping;
 extern int gEscapeTime;
 
-//extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is this extern
+extern int dueltypes[MAX_CLIENTS];//smU/JAPRO - Serverside - Fullforce Duels y is this extern
 
 //sMod tweaks (too be implemented)
 
@@ -480,8 +489,17 @@ typedef struct {
 	int			duelTeam;
 	int			siegeDesiredTeam;
 
+	char		IP[NET_ADDRSTRMAXLEN];
+
 	// smU serverside
+	unsigned int	ignore; // contains bits of all clients to be ignored, 0 - no one ignored, 0xFFFFFFFF - ignore all
 	qboolean	sawMOTD; //smU, has the client been shown the MOTD?
+
+	qboolean	raceMode;
+	int			movementStyle;
+
+	qboolean	juniorAdmin;
+	qboolean	fullAdmin;
 } clientSession_t;
 
 // playerstate mGameFlags
@@ -509,6 +527,65 @@ typedef struct {
 	int			voteCount;			// to prevent people from constantly calling votes
 	int			teamVoteCount;		// to prevent people from constantly calling votes
 	qboolean	teamInfo;			// send team overlay updates?
+
+	int			connectTime;
+
+	qboolean	issmU;//smU - Serverside - Add Clientside Version
+	qboolean	JAWARUN;//JAPRO - Serverside - Add Clientside Version
+	qboolean	centerMuzzle;//JAPRO - Serverside - Check if client wants to center muzzlepoint.
+	qboolean	noDamageNumbers;//Japro
+	qboolean	noDuelTele;
+	qboolean	amfreeze;//JAPRO - Serverside - Admin - Amfreeze admin cmd
+	vec3_t		telemarkOrigin;//JAPRO - Serverside - Admin - Telemark storage
+	float		telemarkAngle;//JAPRO - Serverside - Admin - Telemark storage
+	float		telemarkPitchAngle;//JAPRO - Serverside - Admin - Telemark storage
+	vec3_t		respawnLocation;//JAPRO - Serverside - Admin - Telemark storage
+	float		respawnAngle;
+	//char		clanpass[MAX_QPATH];//Japro - Serverside Clanpass
+	//int			sayteammod;//0 = normal, 1 = clan, 2 = admin
+	int			lastChatTime;//godchat fuck idk why im doing this <- lol
+	int			rate;
+	int			snaps;
+	int			timenudge;
+	int			maxFPS;
+	int			maxPackets;
+	int			thirdPerson;
+	int			thirdPersonRange;
+	int			thirdPersonVertOffset;
+
+	//int			aimSamples[64];//japro anti yawspeed?
+	//int			aimCount;
+
+	qboolean	chatting;
+	//qboolean	raceMode; //move this to session data
+	qboolean	onlyBhop;
+	qboolean	noRoll;
+	qboolean	noCartwheel;
+
+	int			startLag;
+	//int		movementStyle; //move this to session data
+
+	char		saber1[MAX_QPATH], saber2[MAX_QPATH];
+
+	int			vote, teamvote; // 0 = none, 1 = yes, 2 = no
+
+	char		guid[33];
+	char		userName[16];
+	char		lastUserName[16];//To stop duel stats abuse
+	int			duelStartTime;
+	qboolean	backwardsRocket;
+	qboolean	noFollow;
+	qboolean	practice;
+	qboolean	haste;
+	qboolean	validPlugin;
+	qboolean	recordingDemo;//japro autodemo for defrag... :S
+	qboolean	keepDemo;//japro autodemo for defrag... :S
+	qboolean	showChatCP;
+	qboolean	showCenterCP;
+	int			stopRecordingTime;
+	char		oldDemoName[16];
+	char		demoName[MAX_QPATH];
+
 } clientPersistant_t;
 
 typedef struct renderInfo_s

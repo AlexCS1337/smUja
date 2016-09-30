@@ -13,6 +13,9 @@ extern int g_siegeRespawnCheck;
 
 void WP_SaberAddG2Model( gentity_t *saberent, const char *saberModel, qhandle_t saberSkin );
 void WP_SaberRemoveG2Model( gentity_t *saberent );
+//extern qboolean WP_SaberStyleValidForSaber(saberInfo_t *saber1, saberInfo_t *saber2, int saberHolstered, int saberAnimLevel);
+//extern qboolean WP_UseFirstValidSaberStyle(saberInfo_t *saber1, saberInfo_t *saber2, int saberHolstered, int *saberAnimLevel);
+//void G_AddPlayerLog(char *name, char *ip, char *guid);
 
 forcedata_t Client_Force[MAX_CLIENTS];
 
@@ -2474,19 +2477,19 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 				//char arg1[MAX_STRING_TOKENS];
 			
 					/*if (client->pers.issmU == qfalse)
-								trap->SendServerCommand(ent - g_entities, va("print \"^1You do not have the client plugin. Download at www.upsgaming.com\n\""));*/
+								trap_SendServerCommand(ent - g_entities, va("print \"^1You do not have the client plugin. Download at www.upsgaming.com\n\""));*/
 			
 					//if (!strchr( arg1, ';' ) && !strchr( arg1, '\r' ) && !strchr( arg1, '\n' )) //loda idk
 			if (Q_stricmp(g_consoleMOTD.string, ""))
 				trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", g_consoleMOTD.string));
 		
-			/*if (Q_stricmp(g_centerMOTD.string, "")) {
+			if (Q_stricmp(g_centerMOTD.string, "")) {
 				strcpy(ent->client->csMessage, G_NewString(va("^7%s\n", g_centerMOTD.string)));
 				ent->client->csTimeLeft = g_centerMOTDTime.integer;
 			
 		}
 		
-			if (g_playerLog.integer && ent && ent->client && !(ent->r.svFlags & SVF_BOT))
+			/*if (g_playerLog.integer && ent && ent->client && !(ent->r.svFlags & SVF_BOT))
 			 G_AddPlayerLog(client->pers.netname, client->sess.IP, client->pers.guid);*/
 		
 			ent->client->sess.sawMOTD = qtrue;

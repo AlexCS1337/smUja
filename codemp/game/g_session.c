@@ -21,14 +21,68 @@ Called on game shutdown
 ================
 */
 void G_WriteClientSessionData( gclient_t *client ) {
-	const char	*s;
+	char		s[MAX_CVAR_VALUE_STRING] = { 0 },
+		siegeClass[64] = { 0 }, IP[NET_ADDRSTRMAXLEN] = { 0 };
+	//const char	*s;
 	const char	*var;
 	int			i = 0;
-	char		siegeClass[64];
-	char		saberType[64];
-	char		saber2Type[64];
 
-	strcpy(siegeClass, client->sess.siegeClass);
+	Q_strncpyz(siegeClass, client->sess.siegeClass, sizeof(siegeClass));
+	for (i = 0; siegeClass[i]; i++) {
+		if (siegeClass[i] == ' ')
+			siegeClass[i] = 1;
+	}
+	if (!siegeClass[0])
+		Q_strncpyz(siegeClass, "none", sizeof(siegeClass));
+
+	Q_strncpyz(IP, client->sess.IP, sizeof(IP));
+	for (i = 0; IP[i]; i++) {
+		if (IP[i] == ' ')
+			IP[i] = 1;
+	}
+
+	if (!IP[0])
+		Q_strncpyz(IP, "IP", sizeof(IP)); //sad hack. i think this is what was messing up session data.. since scanf was skipping right past it
+
+										  // Make sure there is no space on the last entry
+	Q_strcat(s, sizeof(s), va("%i ", client->sess.sessionTeam));
+	//Q_strcat(s, sizeof(s), va("%i ", client->sess.spectatorNum));
+	Q_strcat(s, sizeof(s), va("%i ", client->sess.spectatorTime));
+	Q_strcat(s, sizeof(s), va("%i ", client->sess.spectatorState));
+	Q_strcat(s, sizeof(s), va("%i ", client->sess.spectatorClient));
+	Q_strcat(s, sizeof(s), va("%i ", client->sess.wins));
+	Q_strcat(s, sizeof(s), va("%i ", client->sess.losses));
+	Q_strcat(s, sizeof(s), va("%i ", client->sess.teamLeader));
+	Q_strcat(s, sizeof(s), va("%i ", client->sess.setForce));
+	Q_strcat(s, sizeof(s), va("%i ", client->sess.saberLevel));
+	Q_strcat(s, sizeof(s), va("%i ", client->sess.selectedFP));
+	Q_strcat(s, sizeof(s), va("%i ", client->sess.duelTeam));
+	Q_strcat(s, sizeof(s), va("%i ", client->sess.siegeDesiredTeam));
+	Q_strcat(s, sizeof(s), va("%s ", siegeClass));
+	Q_strcat(s, sizeof(s), va("%s ", IP));
+
+	Q_strcat(s, sizeof(s), va("%u ", client->sess.ignore));
+	Q_strcat(s, sizeof(s), va("%i ", (int)client->sess.sawMOTD));
+	Q_strcat(s, sizeof(s), va("%i ", (int)client->sess.raceMode));
+	Q_strcat(s, sizeof(s), va("%i ", client->sess.movementStyle));
+
+	Q_strcat(s, sizeof(s), va("%i ", (int)client->sess.juniorAdmin));
+	Q_strcat(s, sizeof(s), va("%i ", (int)client->sess.fullAdmin));
+
+	//Q_strcat(s, sizeof(s), va("%i ", (int)client->sess.sayteammod));
+	//Q_strcat(s, sizeof(s), va("%s", (int)client->sess.clanpass));
+
+	var = va("session%i", client - level.clients);
+
+	trap_Cvar_Set(var, s);
+
+	// Old version of this function
+
+	//char		siegeClass[64];
+	//char		saberType[64];
+	//char		saber2Type[64];
+
+	/*strcpy(siegeClass, client->sess.siegeClass);
 
 	while (siegeClass[i])
 	{ //sort of a hack.. we don't want spaces by siege class names have spaces so convert them all to unused chars
@@ -92,7 +146,7 @@ void G_WriteClientSessionData( gclient_t *client ) {
 
 	var = va( "session%i", client - level.clients );
 
-	trap_Cvar_Set( var, s );
+	trap_Cvar_Set( var, s );*/
 }
 
 /*
@@ -103,7 +157,70 @@ Called on a reconnect
 ================
 */
 void G_ReadSessionData( gclient_t *client ) {
-	char	s[MAX_STRING_CHARS];
+	char			s[MAX_CVAR_VALUE_STRING] = { 0 };
+	const char		*var;
+	int			i = 0, tempSessionTeam = 0, tempSpectatorState, tempTeamLeader, tempSawMOTD, tempRaceMode, tempJRAdmin, tempFullAdmin;
+
+	var = va("session%i", client - level.clients);
+	trap_Cvar_VariableStringBuffer(var, s, sizeof(s));
+
+	//trap->Print("READING: %s, Session: %s\n", var, s);
+
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %s %s %u %i %i %i %i %i %i %s",//[JAPRO - Serverside - All - Ignore]
+		&tempSessionTeam, //&client->sess.sessionTeam,
+		//&client->sess.spectatorNum,
+		client->sess.spectatorTime,
+		&tempSpectatorState, //&client->sess.spectatorState,
+		&client->sess.spectatorClient,
+		&client->sess.wins,
+		&client->sess.losses,
+		&tempTeamLeader, //&client->sess.teamLeader,
+		&client->sess.setForce,
+		&client->sess.saberLevel,
+		&client->sess.selectedFP,
+		&client->sess.duelTeam,
+		&client->sess.siegeDesiredTeam,
+		client->sess.siegeClass,
+		client->sess.IP,
+		&client->sess.ignore, //[JAPRO - Serverside - All - Ignore]
+		&tempSawMOTD,
+		&tempRaceMode,
+		&client->sess.movementStyle,
+		&tempJRAdmin,
+		&tempFullAdmin
+		//&client->sess.sayteammod,
+		//client->sess.clanpass
+		);
+
+	client->sess.sessionTeam = (team_t)tempSessionTeam;
+	client->sess.spectatorState = (spectatorState_t)tempSpectatorState;
+	client->sess.teamLeader = (qboolean)tempTeamLeader;
+	client->sess.sawMOTD = (qboolean)tempSawMOTD;
+	client->sess.raceMode = (qboolean)tempRaceMode;
+	client->sess.juniorAdmin = (qboolean)tempJRAdmin; //lets see if this works now
+	client->sess.fullAdmin = (qboolean)tempFullAdmin;
+
+	if (client->sess.movementStyle == 0)
+		client->sess.movementStyle = 1;//Sad fucking hack to stop it defaulting to siege if player never joined game previous round.. Dunno man
+
+									   // convert back to spaces from unused chars, as session data is written that way.
+	for (i = 0; client->sess.siegeClass[i]; i++)
+	{
+		if (client->sess.siegeClass[i] == 1)
+			client->sess.siegeClass[i] = ' ';
+	}
+
+	for (i = 0; client->sess.IP[i]; i++)
+	{
+		if (client->sess.IP[i] == 1)
+			client->sess.IP[i] = ' ';
+	}
+
+	client->ps.fd.saberAnimLevel = client->sess.saberLevel;
+	client->ps.fd.saberDrawAnimLevel = client->sess.saberLevel;
+	client->ps.fd.forcePowerSelected = client->sess.selectedFP;
+	//old method
+	/*char	s[MAX_STRING_CHARS];
 	const char	*var;
 	int			i = 0;
 
@@ -173,7 +290,7 @@ void G_ReadSessionData( gclient_t *client ) {
 
 	client->ps.fd.saberAnimLevel = client->sess.saberLevel;
 	client->ps.fd.saberDrawAnimLevel = client->sess.saberLevel;
-	client->ps.fd.forcePowerSelected = client->sess.selectedFP;
+	client->ps.fd.forcePowerSelected = client->sess.selectedFP;*/
 }
 
 

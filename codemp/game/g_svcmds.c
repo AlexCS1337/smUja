@@ -110,6 +110,7 @@ static void UpdateIPBans (void)
 {
 	byte	b[4];
 	int		i;
+	char ip[NET_ADDRSTRMAXLEN], iplist_final[MAX_CVAR_VALUE_STRING];
 	char	iplist[MAX_INFO_STRING];
 
 	*iplist = 0;
