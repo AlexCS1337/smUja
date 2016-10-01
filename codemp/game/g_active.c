@@ -798,7 +798,14 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 		if ( client->ps.stats[STAT_ARMOR] > client->ps.stats[STAT_MAX_HEALTH] ) {
 			client->ps.stats[STAT_ARMOR]--;
 		}
+
+		if (client->csTimeLeft) {//smU/japro send message and count down a second
+			trap_SendServerCommand(ent - g_entities, va("cp \"^7%s\n\"", ent->client->csMessage));
+			client->csTimeLeft--;
+		}
 	}
+	
+
 }
 
 /*
