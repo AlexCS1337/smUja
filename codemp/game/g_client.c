@@ -2493,8 +2493,9 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 			
 			//todo: fix this
 			if (Q_stricmp(g_centerMOTD.string, "")) {
-				strcpy(ent->client->csMessage, G_NewString(va("^7%s\n", g_centerMOTD.string))), Com_Printf("Debug Test A: Testing this part");
-				ent->client->csTimeLeft = g_centerMOTDTime.integer, Com_Printf("Debug Test B: This should work\n");
+				trap_SendServerCommand(ent - g_entities, va("cp \"%s\n\"", g_centerMOTD.string));
+				//strcpy(ent->client->csMessage, G_NewString(va("^7%s\n", g_centerMOTD.string))); //Com_Printf("Debug Test A: Testing this part");
+				//ent->client->csTimeLeft = g_centerMOTDTime.integer; //Com_Printf("Debug Test B: This should work\n");
 			
 		}
 		
