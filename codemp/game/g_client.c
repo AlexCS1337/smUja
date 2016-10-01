@@ -2246,6 +2246,12 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	te->r.svFlags |= SVF_BROADCAST;
 	te->s.eventParm = clientNum;
 
+	if (firstTime || level.newSession) {
+		trap_SendServerCommand(ent - g_entities, va("print \"----------------------- This server is running smU -----------------------\n\""));
+		trap_SendServerCommand(ent - g_entities, va("print \"More information coming soon..\n\""));
+		trap_SendServerCommand(ent - g_entities, va("print \"--------------------------------------------------------------------------\n\""));
+	}
+
 	// for statistics
 //	client->areabits = areabits;
 //	if ( !client->areabits )

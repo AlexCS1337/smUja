@@ -21,9 +21,9 @@ Called on game shutdown
 ================
 */
 void G_WriteClientSessionData( gclient_t *client ) {
-	char		s[MAX_CVAR_VALUE_STRING] = { 0 },
+	//new method but does not yet work
+	/*char		s[MAX_CVAR_VALUE_STRING] = { 0 },
 		siegeClass[64] = { 0 }, IP[NET_ADDRSTRMAXLEN] = { 0 };
-	//const char	*s;
 	const char	*var;
 	int			i = 0;
 
@@ -63,26 +63,30 @@ void G_WriteClientSessionData( gclient_t *client ) {
 
 	Q_strcat(s, sizeof(s), va("%u ", client->sess.ignore));
 	Q_strcat(s, sizeof(s), va("%i ", (int)client->sess.sawMOTD));
-	Q_strcat(s, sizeof(s), va("%i ", (int)client->sess.raceMode));
-	Q_strcat(s, sizeof(s), va("%i ", client->sess.movementStyle));
+	//Q_strcat(s, sizeof(s), va("%i ", (int)client->sess.raceMode));
+	//Q_strcat(s, sizeof(s), va("%i ", client->sess.movementStyle));
 
-	Q_strcat(s, sizeof(s), va("%i ", (int)client->sess.juniorAdmin));
-	Q_strcat(s, sizeof(s), va("%i ", (int)client->sess.fullAdmin));
+	//Q_strcat(s, sizeof(s), va("%i ", (int)client->sess.juniorAdmin));
+	//Q_strcat(s, sizeof(s), va("%i ", (int)client->sess.fullAdmin));
 
 	//Q_strcat(s, sizeof(s), va("%i ", (int)client->sess.sayteammod));
 	//Q_strcat(s, sizeof(s), va("%s", (int)client->sess.clanpass));
 
 	var = va("session%i", client - level.clients);
 
-	trap_Cvar_Set(var, s);
+	trap_Cvar_Set(var, s);*/
 
 	// Old version of this function
 
-	//char		siegeClass[64];
-	//char		saberType[64];
-	//char		saber2Type[64];
+	const char	*s;
+	const char	*var;
+	int			i = 0;
 
-	/*strcpy(siegeClass, client->sess.siegeClass);
+	char		siegeClass[64];
+	char		saberType[64];
+	char		saber2Type[64];
+
+	strcpy(siegeClass, client->sess.siegeClass);
 
 	while (siegeClass[i])
 	{ //sort of a hack.. we don't want spaces by siege class names have spaces so convert them all to unused chars
@@ -146,7 +150,7 @@ void G_WriteClientSessionData( gclient_t *client ) {
 
 	var = va( "session%i", client - level.clients );
 
-	trap_Cvar_Set( var, s );*/
+	trap_Cvar_Set( var, s );
 }
 
 /*
@@ -157,7 +161,8 @@ Called on a reconnect
 ================
 */
 void G_ReadSessionData( gclient_t *client ) {
-	char			s[MAX_CVAR_VALUE_STRING] = { 0 };
+	//new method but does not yet work
+	/*char			s[MAX_CVAR_VALUE_STRING] = { 0 };
 	const char		*var;
 	int			i = 0, tempSessionTeam = 0, tempSpectatorState, tempTeamLeader, tempSawMOTD, tempRaceMode, tempJRAdmin, tempFullAdmin;
 
@@ -183,11 +188,11 @@ void G_ReadSessionData( gclient_t *client ) {
 		client->sess.siegeClass,
 		client->sess.IP,
 		&client->sess.ignore, //[JAPRO - Serverside - All - Ignore]
-		&tempSawMOTD,
-		&tempRaceMode,
-		&client->sess.movementStyle,
-		&tempJRAdmin,
-		&tempFullAdmin
+		&tempSawMOTD
+		//&tempRaceMode,
+		//&client->sess.movementStyle
+		//&tempJRAdmin,
+		//&tempFullAdmin,
 		//&client->sess.sayteammod,
 		//client->sess.clanpass
 		);
@@ -196,12 +201,12 @@ void G_ReadSessionData( gclient_t *client ) {
 	client->sess.spectatorState = (spectatorState_t)tempSpectatorState;
 	client->sess.teamLeader = (qboolean)tempTeamLeader;
 	client->sess.sawMOTD = (qboolean)tempSawMOTD;
-	client->sess.raceMode = (qboolean)tempRaceMode;
-	client->sess.juniorAdmin = (qboolean)tempJRAdmin; //lets see if this works now
-	client->sess.fullAdmin = (qboolean)tempFullAdmin;
+	//client->sess.raceMode = (qboolean)tempRaceMode;
+	//client->sess.juniorAdmin = (qboolean)tempJRAdmin; //lets see if this works now
+	//client->sess.fullAdmin = (qboolean)tempFullAdmin;
 
-	if (client->sess.movementStyle == 0)
-		client->sess.movementStyle = 1;//Sad fucking hack to stop it defaulting to siege if player never joined game previous round.. Dunno man
+	//if (client->sess.movementStyle == 0)
+		//client->sess.movementStyle = 1;//Sad fucking hack to stop it defaulting to siege if player never joined game previous round.. Dunno man
 
 									   // convert back to spaces from unused chars, as session data is written that way.
 	for (i = 0; client->sess.siegeClass[i]; i++)
@@ -218,9 +223,9 @@ void G_ReadSessionData( gclient_t *client ) {
 
 	client->ps.fd.saberAnimLevel = client->sess.saberLevel;
 	client->ps.fd.saberDrawAnimLevel = client->sess.saberLevel;
-	client->ps.fd.forcePowerSelected = client->sess.selectedFP;
+	client->ps.fd.forcePowerSelected = client->sess.selectedFP;*/
 	//old method
-	/*char	s[MAX_STRING_CHARS];
+	char	s[MAX_STRING_CHARS];
 	const char	*var;
 	int			i = 0;
 
@@ -290,7 +295,7 @@ void G_ReadSessionData( gclient_t *client ) {
 
 	client->ps.fd.saberAnimLevel = client->sess.saberLevel;
 	client->ps.fd.saberDrawAnimLevel = client->sess.saberLevel;
-	client->ps.fd.forcePowerSelected = client->sess.selectedFP;*/
+	client->ps.fd.forcePowerSelected = client->sess.selectedFP;
 }
 
 

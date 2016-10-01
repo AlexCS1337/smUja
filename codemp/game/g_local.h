@@ -495,11 +495,11 @@ typedef struct {
 	unsigned int	ignore; // contains bits of all clients to be ignored, 0 - no one ignored, 0xFFFFFFFF - ignore all
 	qboolean	sawMOTD; //smU, has the client been shown the MOTD?
 
-	qboolean	raceMode;
-	int			movementStyle;
+	//boolean	raceMode;
+	//int			movementStyle;
 
-	qboolean	juniorAdmin;
-	qboolean	fullAdmin;
+	//qboolean	juniorAdmin;
+	//qboolean	fullAdmin;
 } clientSession_t;
 
 // playerstate mGameFlags
@@ -530,7 +530,7 @@ typedef struct {
 
 	int			connectTime;
 
-	qboolean	issmU;//smU - Serverside - Add Clientside Version
+	/*qboolean	issmU;//smU - Serverside - Add Clientside Version
 	qboolean	JAWARUN;//JAPRO - Serverside - Add Clientside Version
 	qboolean	centerMuzzle;//JAPRO - Serverside - Check if client wants to center muzzlepoint.
 	qboolean	noDamageNumbers;//Japro
@@ -584,7 +584,7 @@ typedef struct {
 	qboolean	showCenterCP;
 	int			stopRecordingTime;
 	char		oldDemoName[16];
-	char		demoName[MAX_QPATH];
+	char		demoName[MAX_QPATH];*/
 
 } clientPersistant_t;
 

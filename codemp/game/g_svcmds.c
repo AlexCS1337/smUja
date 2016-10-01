@@ -111,20 +111,20 @@ static void UpdateIPBans (void)
 	byte	b[4];
 	int		i;
 	char ip[NET_ADDRSTRMAXLEN], iplist_final[MAX_CVAR_VALUE_STRING];
-	char	iplist[MAX_INFO_STRING];
+	//char	iplist[MAX_INFO_STRING];
 
-	*iplist = 0;
+	*iplist_final = 0;
 	for (i = 0 ; i < numIPFilters ; i++)
 	{
 		if (ipFilters[i].compare == 0xffffffff)
 			continue;
 
 		*(unsigned *)b = ipFilters[i].compare;
-		Com_sprintf( iplist + strlen(iplist), sizeof(iplist) - strlen(iplist), 
+		Com_sprintf( iplist_final + strlen(iplist_final), sizeof(iplist_final) - strlen(iplist_final), 
 			"%i.%i.%i.%i ", b[0], b[1], b[2], b[3]);
 	}
 
-	trap_Cvar_Set( "g_banIPs", iplist );
+	trap_Cvar_Set( "g_banIPs", iplist_final );
 }
 
 /*
