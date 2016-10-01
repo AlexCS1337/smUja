@@ -2479,7 +2479,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	// count current clients and rank for scoreboard
 	CalculateRanks();
 
-	// This checks if client is in game and hasn't yet seen the console or center MOTD
+	// This checks if client is in game and has yet seen the console or center MOTD
 	if (client->sess.sessionTeam != TEAM_SPECTATOR && ent->client->sess.sawMOTD == qfalse)
 		{
 				//char arg1[MAX_STRING_TOKENS];
@@ -2493,8 +2493,8 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 			
 			//todo: fix this
 			if (Q_stricmp(g_centerMOTD.string, "")) {
-				strcpy(ent->client->csMessage, G_NewString(va("^7%s\n", g_centerMOTD.string)));
-				ent->client->csTimeLeft = g_centerMOTDTime.integer;
+				strcpy(ent->client->csMessage, G_NewString(va("^7%s\n", g_centerMOTD.string))), Com_Printf("Debug Test A: Testing this part");
+				ent->client->csTimeLeft = g_centerMOTDTime.integer, Com_Printf("Debug Test B: This should work\n");
 			
 		}
 		
