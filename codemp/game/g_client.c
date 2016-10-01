@@ -2247,8 +2247,10 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	te->s.eventParm = clientNum;
 
 	if (firstTime || level.newSession) {
-		trap_SendServerCommand(ent - g_entities, va("print \"----------------------- This server is running smU -----------------------\n\""));
-		trap_SendServerCommand(ent - g_entities, va("print \"More information coming soon..\n\""));
+		trap_SendServerCommand(ent - g_entities, va("print \"----------------------- This server is running smU (alpha-1.112)-----------------------\n\""));
+		trap_SendServerCommand(ent - g_entities, va("print \"Written by ^5Sm^7oo\n\""));
+		trap_SendServerCommand(ent - g_entities, va("print \"For now you can toggle allowSabergun, allowBlackNames, sv_cheats and allowDebug\n\""));
+		trap_SendServerCommand(ent - g_entities, va("print \"Also, multiple duels are allowed and starting health/armor can be set.\n\""));
 		trap_SendServerCommand(ent - g_entities, va("print \"--------------------------------------------------------------------------\n\""));
 	}
 
@@ -2488,7 +2490,8 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 					//if (!strchr( arg1, ';' ) && !strchr( arg1, '\r' ) && !strchr( arg1, '\n' )) //loda idk
 			if (Q_stricmp(g_consoleMOTD.string, ""))
 				trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", g_consoleMOTD.string));
-		
+			
+			//todo: fix this
 			if (Q_stricmp(g_centerMOTD.string, "")) {
 				strcpy(ent->client->csMessage, G_NewString(va("^7%s\n", g_centerMOTD.string)));
 				ent->client->csTimeLeft = g_centerMOTDTime.integer;
