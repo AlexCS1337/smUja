@@ -2589,6 +2589,30 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	// count current clients and rank for scoreboard
 	CalculateRanks();
 
+	// This checks if client is in game and hasn't yet seen the console or center MOTD
+	if (client->sess.sessionTeam != TEAM_SPECTATOR && ent->client->sess.sawMOTD == qfalse)
+	{
+		//char arg1[MAX_STRING_TOKENS];
+
+		/*if (client->pers.issmU == qfalse)
+		trap->SendServerCommand(ent - g_entities, va("print \"^1You do not have the client plugin. Download at www.upsgaming.com\n\""));*/
+
+		//if (!strchr( arg1, ';' ) && !strchr( arg1, '\r' ) && !strchr( arg1, '\n' )) //loda idk
+		if (Q_stricmp(g_consoleMOTD.string, ""))
+			trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", g_consoleMOTD.string));
+
+		if (Q_stricmp(g_centerMOTD.string, "")) {
+		strcpy(ent->client->csMessage, G_NewString(va("^7%s\n", g_centerMOTD.string)));
+		ent->client->csTimeLeft = g_centerMOTDTime.integer;
+
+		}
+
+		/*if (g_playerLog.integer && ent && ent->client && !(ent->r.svFlags & SVF_BOT))
+		G_AddPlayerLog(client->pers.netname, client->sess.IP, client->pers.guid);*/
+
+		ent->client->sess.sawMOTD = qtrue;
+	}
+
 	G_ClearClientLog(clientNum);
 }
 

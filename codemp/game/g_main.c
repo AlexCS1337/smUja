@@ -228,6 +228,10 @@ vmCvar_t g_allowSabergun;
 vmCvar_t g_duelStartHealth;
 vmCvar_t g_duelStartArmor;
 vmCvar_t g_allowDebug;
+vmCvar_t g_consoleMOTD;
+vmCvar_t g_centerMOTDTime;
+vmCvar_t g_centerMOTD;
+
 
 // nmckenzie: temporary way to show player healths in duels - some iface gfx in game would be better, of course.
 // DUEL_HEALTH
@@ -481,11 +485,20 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_powerDuelEndHealth, "g_powerDuelEndHealth", "90", CVAR_ARCHIVE, 0, qtrue  },
 
 // smU cVars
-	{ &g_allowBlackNames, "g_allowBlackNames", "0", CVAR_SERVERINFO, 0, qtrue },
+	//smU - Saber
 	{ &g_allowSabergun, "g_allowSabergun", "0", CVAR_SERVERINFO, 0, qtrue },
+	{ &g_allowDebug, "g_allowDebug", "0", CVAR_SERVERINFO, 0, qtrue },
+
+	// smU - Dueling
 	{ &g_duelStartHealth, "g_duelStartHealth", "0", CVAR_SERVERINFO, 0, qfalse },
 	{ &g_duelStartArmor, "g_duelStartArmor", "0", CVAR_SERVERINFO, 0, qfalse },
-	{ &g_allowDebug, "g_allowDebug", "0", CVAR_SERVERINFO, 0, qtrue }
+	{ &g_duelDistanceLimit, "g_duelDistanceLimit", 0, CVAR_SERVERINFO, 0, qfalse },
+
+	// smU - Other
+	{ &g_allowBlackNames, "g_allowBlackNames", "0", CVAR_SERVERINFO, 0, qtrue },	
+	{ &g_consoleMOTD, "g_consoleMOTD", "", CVAR_ARCHIVE, 0, qfalse },
+	{ &g_centerMOTDTime, "g_centerMOTDTime", "5", CVAR_ARCHIVE, 0, qfalse},
+	{ &g_centerMOTD, "g_centerMOTD", "", CVAR_ARCHIVE, 0, qfalse }
 };
 
 // bk001129 - made static to avoid aliasing

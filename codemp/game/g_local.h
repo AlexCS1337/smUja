@@ -425,6 +425,10 @@ typedef struct {
 	char		saber2Type[64];
 	int			duelTeam;
 	int			siegeDesiredTeam;
+
+	// smU serverside
+	qboolean	sawMOTD; // smU, has the client been shown the MOTD?
+
 	int			killCount;
 	int			TKCount;
 	char		IPstring[32];		// yeah, I know, could be 16, but, just in case...
@@ -737,6 +741,10 @@ struct gclient_s {
 
 	//fallen duelist
 	qboolean	iAmALoser;
+
+	//smU stuff
+	char	csMessage[MAX_STRING_CHARS]; // smU - Message to say CenterScreen
+	short	csTimeLeft; // smU - Time left for client's CenterScreen
 
 	int			lastGenCmd;
 	int			lastGenCmdTime;
@@ -1325,12 +1333,21 @@ extern vmCvar_t g_ff_objectives;
 extern qboolean gDoSlowMoDuel;
 extern int gSlowMoDuelTime;
 
-//sMu
-extern vmCvar_t g_allowBlackNames;
+//sMu - Saber
 extern vmCvar_t g_allowSabergun;
+extern vmCvar_t g_allowDebug;
+
+// smU - Dueling
 extern vmCvar_t g_duelStartHealth;
 extern vmCvar_t g_duelStartArmor;
-extern vmCvar_t g_allowDebug;
+extern vmCvar_t g_duelDistanceLimit;
+
+// smU - other
+extern vmCvar_t g_allowBlackNames;
+
+extern vmCvar_t g_consoleMOTD;
+extern vmCvar_t g_centerMOTDTime;
+extern vmCvar_t g_centerMOTD;
 
 void G_PowerDuelCount(int *loners, int *doubles, qboolean countSpec);
 
