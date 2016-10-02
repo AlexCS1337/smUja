@@ -227,6 +227,7 @@ vmCvar_t g_allowBlackNames;
 vmCvar_t g_allowSabergun;
 vmCvar_t g_duelStartHealth;
 vmCvar_t g_duelStartArmor;
+vmCvar_t g_duelDistanceLimit;
 vmCvar_t g_allowDebug;
 vmCvar_t g_consoleMOTD;
 vmCvar_t g_centerMOTDTime;
@@ -490,9 +491,9 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_allowDebug, "g_allowDebug", "0", CVAR_SERVERINFO, 0, qtrue },
 
 	// smU - Dueling
-	{ &g_duelStartHealth, "g_duelStartHealth", "0", CVAR_SERVERINFO, 0, qfalse },
-	{ &g_duelStartArmor, "g_duelStartArmor", "0", CVAR_SERVERINFO, 0, qfalse },
-	{ &g_duelDistanceLimit, "g_duelDistanceLimit", 0, CVAR_SERVERINFO, 0, qfalse },
+	{ &g_duelStartHealth, "g_duelStartHealth", "0", CVAR_ARCHIVE, 0, qfalse },
+	{ &g_duelStartArmor, "g_duelStartArmor", "0", CVAR_ARCHIVE, 0, qfalse },
+	{ &g_duelDistanceLimit, "g_duelDistanceLimit", "0", CVAR_ARCHIVE, 0, qtrue },
 
 	// smU - Other
 	{ &g_allowBlackNames, "g_allowBlackNames", "0", CVAR_SERVERINFO, 0, qtrue },	
