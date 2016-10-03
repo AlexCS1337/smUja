@@ -1,5 +1,5 @@
 # smU
-smoo's mod Ultimate mod For Jedi Academy - Forked from http://sourceforge.net/projects/jediacademy/
+smoo's mod Ultimate For Jedi Academy - Forked from http://sourceforge.net/projects/jediacademy/
 # Changes and additions
 
 * All taunts are available in all game modes (meditate, gloat, flourish, etc)
