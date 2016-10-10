@@ -1578,21 +1578,21 @@ void SV_UserinfoChanged(client_t *cl) {
 				return;
 			}
 		}
-	}
+	}*/
 
-	// serverside broken models fix (head only model)
-	if (mv_fixbrokenmodels->integer && !(sv.fixes & MVFIX_BROKENMODEL)) {
+	if (sv_fixbrokenmodels->integer) {//&& !(sv.fixes & MVFIX_BROKENMODEL)) {
 		char model[80];
 
 		Q_strncpyz(model, Info_ValueForKey(cl->userinfo, "model"), sizeof(model));
-		if (!Q_stricmpn(model, "kyle/fpls", 9) || !Q_stricmp(model, "morgan") || (!Q_stricmpn(model, "morgan/", 7) && (Q_stricmp(model, "morgan/default_mp") && Q_stricmp(model, "morgan/red") && Q_stricmp(model, "morgan/blue"))))
+		if (!Q_stricmpn(model, "|", 9) || !Q_stricmp(model, "|"))
 		{
 			if (!Info_SetValueForKey(cl->userinfo, "model", "kyle/default"))
 			{
 				SV_DropClient(cl, "userinfo string length exceeded");
 				return;
 			}
-		}*/
+		}
+	}
 }
 
 #define INFO_CHANGE_MIN_INTERVAL	6000 //6 seconds is reasonable I suppose
