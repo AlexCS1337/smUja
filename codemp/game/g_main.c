@@ -220,6 +220,9 @@ vmCvar_t	g_powerDuelEndHealth;
 vmCvar_t	g_tweakSaber;
 vmCvar_t	g_allowSabergun;
 
+// smU - Movement
+vmCvar_t	g_flipKick;
+
 // smU - Dueling
 vmCvar_t	g_duelStartHealth;
 vmCvar_t	g_duelStartArmor;
@@ -482,6 +485,9 @@ static cvarTable_t		gameCvarTable[] = {
 // smU - Saber
 	{ &g_allowSabergun, "g_allowSabergun", "1", CVAR_ARCHIVE, 0, qtrue },
 	{ &g_tweakSaber, "g_tweakSaber", "0", CVAR_ARCHIVE, 0, qtrue},//add in CVU_tweakSaber later
+
+// smU - Movement
+	{ &g_flipKick, "g_flipKick", "0", CVAR_ARCHIVE, 0, qtrue},
 
 // smU - Dueling
 	{ &g_duelStartHealth, "g_duelStartHealth", "0", CVAR_ARCHIVE, 0, qfalse },

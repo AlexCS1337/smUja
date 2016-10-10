@@ -167,6 +167,36 @@ float forceJumpStrength[NUM_FORCE_POWER_LEVELS] =
 	840
 };
 
+static int GetFlipkick(playerState_t *ps) {
+	//if (!ps) //?
+	//return;
+#if _GAME
+	if (ps->duelInProgress) {
+		if (dueltypes[ps->clientNum] == 0) { //NF.. man this sucks.. fucks up JA+ nf duels
+			return 0;
+		}
+	}
+	return g_flipKick.integer;
+/*#else
+	if (cgs.isJAPro) {
+		if (ps->duelInProgress) {
+			if (cg_dueltypes[ps->clientNum] == 1) { //NF 
+				return 0;
+			}
+		}
+		if (cgs.jcinfo & JAPRO_CINFO_FLIPKICK) {
+			if (cgs.jcinfo & JAPRO_CINFO_FIXSIDEKICK)
+				return 3;
+			return 2; //1 ans 2 are the same thing clientside...hmm
+		}
+	}
+	if (cgs.isJAPlus && (cgs.cinfo & JAPLUS_CINFO_FLIPKICK))
+		return 1;
+
+	return 0;*/
+#endif
+}
+
 //rww - Get a pointer to the bgEntity by the index
 bgEntity_t *PM_BGEntForNum( int num )
 {
@@ -10007,11 +10037,11 @@ void PmoveSingle (pmove_t *pmove) {
 			if ( pm->ps->legsTimer > 0 || pm->ps->torsoTimer > 0 )
 			{
 				stiffenedUp = qtrue;
-				PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+				//PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
 				pm->cmd.rightmove = 0;
 				pm->cmd.upmove = 0;
 				pm->cmd.forwardmove = 0;
-				pm->cmd.buttons = 0;
+				//pm->cmd.buttons = 0;
 			}
 		}
 	}

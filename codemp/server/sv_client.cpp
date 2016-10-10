@@ -1449,57 +1449,62 @@ Pull specific info from a newly changed userinfo string
 into a more C friendly form.
 =================
 */
-void SV_UserinfoChanged( client_t *cl ) {
+void SV_UserinfoChanged(client_t *cl) {
 	char	*val;
 	int		i;
 
 	// name for C code
-	Q_strncpyz( cl->name, Info_ValueForKey (cl->userinfo, "name"), sizeof(cl->name) );
+	Q_strncpyz(cl->name, Info_ValueForKey(cl->userinfo, "name"), sizeof(cl->name));
 
 	// rate command
 
 	// if the client is on the same subnet as the server and we aren't running an
 	// internet public server, assume they don't need a rate choke
-	if ( Sys_IsLANAddress( cl->netchan.remoteAddress ) && com_dedicated->integer != 2 ) {
+	if (Sys_IsLANAddress(cl->netchan.remoteAddress) && com_dedicated->integer != 2) {
 		cl->rate = 99999;	// lans should not rate limit
-	} else {
-		val = Info_ValueForKey (cl->userinfo, "rate");
+	}
+	else {
+		val = Info_ValueForKey(cl->userinfo, "rate");
 		if (strlen(val)) {
 			i = atoi(val);
 			cl->rate = i;
 			if (cl->rate < 1000) {
 				cl->rate = 1000;
-			} else if (cl->rate > 90000) {
+			}
+			else if (cl->rate > 90000) {
 				cl->rate = 90000;
 			}
-		} else {
+		}
+		else {
 			cl->rate = 3000;
 		}
 	}
-	val = Info_ValueForKey (cl->userinfo, "handicap");
+	val = Info_ValueForKey(cl->userinfo, "handicap");
 	if (strlen(val)) {
 		i = atoi(val);
-		if (i<=0 || i>100 || strlen(val) > 4) {
-			Info_SetValueForKey( cl->userinfo, "handicap", "100" );
+		if (i <= 0 || i > 100 || strlen(val) > 4) {
+			Info_SetValueForKey(cl->userinfo, "handicap", "100");
 		}
 	}
 
 	// snaps command
-	val = Info_ValueForKey (cl->userinfo, "snaps");
+	val = Info_ValueForKey(cl->userinfo, "snaps");
 	if (strlen(val)) {
 		i = atoi(val);
-		if ( i < 1 ) {
+		if (i < 1) {
 			i = 1;
-		} else if ( i > 30 ) {
+		}
+		else if (i > 30) {
 			i = 30;
 		}
-		cl->snapshotMsec = 1000/i;
-	} else {
+		cl->snapshotMsec = 1000 / i;
+	}
+	else {
 		cl->snapshotMsec = 50;
 	}
 
 	// forcecrash fix
-	if (sv_fixforcecrash->integer ) {//&& !(sv.fixes & SVFIX_FORCECRASH)) {
+	if (sv_fixforcecrash->integer) {//&& !(sv.fixes & SVFIX_FORCECRASH)) {
 		char forcePowers[30];
 		Q_strncpyz(forcePowers, Info_ValueForKey(cl->userinfo, "forcepowers"), sizeof(forcePowers));
 
@@ -1588,7 +1593,6 @@ void SV_UserinfoChanged( client_t *cl ) {
 				return;
 			}
 		}*/
-
 }
 
 #define INFO_CHANGE_MIN_INTERVAL	6000 //6 seconds is reasonable I suppose

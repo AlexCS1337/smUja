@@ -1452,6 +1452,9 @@ extern int gSlowMoDuelTime;
 extern vmCvar_t g_allowSabergun;
 extern vmCvar_t g_tweakSaber;
 
+// smU - Movement
+extern vmCvar_t	g_flipKick;
+
 // smU - Dueling
 extern vmCvar_t g_duelStartHealth;
 extern vmCvar_t g_duelStartArmor;
