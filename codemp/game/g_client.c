@@ -2252,7 +2252,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		trap_SendServerCommand(ent - g_entities, va("print \"For now you can toggle allowSabergun, allowBlackNames, sv_cheats and allowDebug\n\""));
 		trap_SendServerCommand(ent - g_entities, va("print \"Also, multiple duels are allowed and starting health/armor can be set.\n\""));
 		trap_SendServerCommand(ent - g_entities, va("print \"--------------------------------------------------------------------------\n\""));
-		trap_SendServerCommand(ent - g_entities, va("print \"^5[ ^7This server is running smU alphav1.113 | jkhub.org^5 ]\n\""));
+		trap_SendServerCommand(ent - g_entities, va("print \"\n^5[ ^7This server is running smU alphav1.113 | jkhub.org^5 ]\n\""));
 	}
 
 	// for statistics

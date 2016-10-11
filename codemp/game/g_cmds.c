@@ -127,7 +127,7 @@ This allows debug commands if g_allowDebug is set
 */
 qboolean	DebugOk(gentity_t *ent) {
 	if (!g_allowDebug.integer) {
-		trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOCHEATS")));
+		trap_SendServerCommand(ent - g_entities, va("print \"Debug commands are not enabled on this server. Contact an admin. \n(Mod has support)\n\""));
 		return qfalse;
 	}
 	return qtrue;
@@ -3928,7 +3928,7 @@ void ClientCommand( int clientNum ) {
 	}
 #endif
 #ifndef FINAL_BUILD
-	else if (Q_stricmp(cmd, "debugShipDamage") == 0)
+	else if (Q_stricmp(cmd, "debugShipDamage") == 0 && DebugOk(ent))
 	{
 		char	arg[MAX_STRING_CHARS];
 		char	arg2[MAX_STRING_CHARS];
