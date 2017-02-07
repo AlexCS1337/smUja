@@ -20,6 +20,8 @@
 #endif
 #endif
 
+int dueltypes[MAX_CLIENTS];//smU - Serverside - Fullforce Duels
+
 #ifdef _XBOX
 extern void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int iAlign);
 extern void Z_Free(void *pvAddress);

@@ -1117,6 +1117,12 @@ typedef struct {
 
 	char		mTeamFilter[MAX_QPATH];
 
+	int         frameStartTime;
+	struct {
+		int state; // loda fixme, not needed?	- well now it is. OSP: pause
+		int time;
+	} pause;
+
 } level_locals_t;
 
 
@@ -1513,12 +1519,14 @@ extern vmCvar_t g_allowSabergun;
 extern vmCvar_t g_tweakSaber;
 
 // smU - Movement
+extern vmCvar_t	g_movementStyle;
 extern vmCvar_t	g_flipKick;
 
 // smU - Dueling
 extern vmCvar_t g_duelStartHealth;
 extern vmCvar_t g_duelStartArmor;
 extern vmCvar_t g_duelDistanceLimit;
+extern	vmCvar_t	g_allowGunDuel;
 
 // smU - Other
 extern vmCvar_t g_allowBlackNames;
@@ -1527,6 +1535,28 @@ extern vmCvar_t g_consoleMOTD;
 extern vmCvar_t g_centerMOTDTime;
 extern vmCvar_t g_centerMOTD;
 extern vmCvar_t g_playerLog;
+
+//smU ADMIN
+extern	vmCvar_t	g_juniorAdminLevel;
+extern	vmCvar_t	g_fullAdminLevel;
+extern	vmCvar_t	g_juniorAdminPass;
+extern	vmCvar_t	g_fullAdminPass;
+extern	vmCvar_t	g_juniorAdminMsg;
+extern	vmCvar_t	g_fullAdminMsg;
+extern	vmCvar_t	g_allowNoFollow;
+
+//smU RACEMODE / ACCOUNT
+extern	vmCvar_t	g_raceMode;
+extern	vmCvar_t	g_allowRaceTele;
+extern	vmCvar_t	g_forceLogin;
+
+
+typedef enum matchPause_e { //OSP: pause
+	PAUSE_NONE = 0,
+	PAUSE_PAUSED,
+	PAUSE_UNPAUSING,
+} matchPause_t;
+
 
 void G_PowerDuelCount(int *loners, int *doubles, qboolean countSpec);
 

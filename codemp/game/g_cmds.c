@@ -189,6 +189,161 @@ void SanitizeString( char *in, char *out ) {
 	*out = 0;
 }
 
+//[videoP - smU- Serverside - All - Redid and moved sanitizestring2 for partial name recognition - Start]
+/*
+==================
+SanitizeString2
+
+Rich's revised version of SanitizeString
+==================
+*/
+void SanitizeString2(const char *in, char *out)
+{
+	int i = 0;
+	int r = 0;
+
+	while (in[i])
+	{
+		if (i >= MAX_NAME_LENGTH - 1)
+		{ //the ui truncates the name here..
+			break;
+		}
+
+		if (in[i] == '^')
+		{
+			if (in[i + 1] >= 48 && //'0'
+				in[i + 1] <= 57) //'9'
+			{ //only skip it if there's a number after it for the color
+				i += 2;
+				continue;
+			}
+			else
+			{ //just skip the ^
+				i++;
+				continue;
+			}
+		}
+
+		if (in[i] < 32)
+		{
+			i++;
+			continue;
+		}
+
+		out[r] = tolower(in[i]);//lowercase please
+		r++;
+		i++;
+	}
+	out[r] = 0;
+}
+//[videoP - smU - Serverside - All - Redid and moved sanitizestring2 for partial name recognition - End]
+
+//[videoP - smU - Serverside - All - Redid and clientnumberfromstring for partial name recognition - Start]
+/*
+==================
+ClientNumberFromString
+
+Returns a player number for either a number or name string
+Returns -1 if invalid
+==================
+*/
+static int JP_ClientNumberFromString(gentity_t *to, const char *s)
+{
+	gclient_t	*cl;
+	int			idnum, i, match = -1;
+	char		s2[MAX_STRING_CHARS];
+	char		n2[MAX_STRING_CHARS];
+	idnum = atoi(s);
+
+
+	//redo
+	/*
+	if (!Q_stricmp(s, "0")) {
+	cl = &level.clients[idnum];
+	if ( cl->pers.connected != CON_CONNECTED ) {
+	trap->SendServerCommand( to-g_entities, va("print \"Client '%i' is not active\n\"", idnum));
+	return -1;
+	}
+	return 0;
+	}
+	if (idnum && idnum < 32) {
+	cl = &level.clients[idnum];
+	if ( cl->pers.connected != CON_CONNECTED ) {
+	trap->SendServerCommand( to-g_entities, va("print \"Client '%i' is not active\n\"", idnum));
+	return -1;
+	}
+	return idnum;
+	}
+	*/
+	//end redo
+
+	// numeric values are just slot numbers
+	if (s[0] >= '0' && s[0] <= '9' && strlen(s) == 1) //changed this to only recognize numbers 0-31 as client numbers, otherwise interpret as a name, in which case sanitize2 it and accept partial matches (return error if multiple matches)
+	{
+		idnum = atoi(s);
+		cl = &level.clients[idnum];
+		if (cl->pers.connected != CON_CONNECTED) {
+			trap_SendServerCommand(to - g_entities, va("print \"Client '%i' is not active\n\"", idnum));
+			return -1;
+		}
+		return idnum;
+	}
+
+	if ((s[0] == '1' || s[0] == '2') && (s[1] >= '0' && s[1] <= '9' && strlen(s) == 2))  //changed and to or ..
+	{
+		idnum = atoi(s);
+		cl = &level.clients[idnum];
+		if (cl->pers.connected != CON_CONNECTED) {
+			trap_SendServerCommand(to - g_entities, va("print \"Client '%i' is not active\n\"", idnum));
+			return -1;
+		}
+		return idnum;
+	}
+
+	if (s[0] == '3' && (s[1] >= '0' && s[1] <= '1' && strlen(s) == 2))
+	{
+		idnum = atoi(s);
+		cl = &level.clients[idnum];
+		if (cl->pers.connected != CON_CONNECTED) {
+			trap_SendServerCommand(to - g_entities, va("print \"Client '%i' is not active\n\"", idnum));
+			return -1;
+		}
+		return idnum;
+	}
+
+
+
+
+	// check for a name match
+	SanitizeString2(s, s2);
+	for (idnum = 0, cl = level.clients; idnum < level.maxclients; idnum++, cl++) {
+		if (cl->pers.connected != CON_CONNECTED) {
+			continue;
+		}
+		SanitizeString2(cl->pers.netname, n2);
+
+		for (i = 0; i < level.numConnectedClients; i++)
+		{
+			cl = &level.clients[level.sortedClients[i]];
+			SanitizeString2(cl->pers.netname, n2);
+			if (strstr(n2, s2))
+			{
+				if (match != -1)
+				{ //found more than one match
+					trap_SendServerCommand(to - g_entities, va("print \"More than one user '%s' on the server\n\"", s));
+					return -2;
+				}
+				match = level.sortedClients[i];
+			}
+		}
+		if (match != -1)//uhh
+			return match;
+	}
+	if (!atoi(s)) //Uhh.. well.. whatever. fixes amtele spam problem when teleporting to x y z yaw
+		trap_SendServerCommand(to - g_entities, va("print \"User '%s' is not on the server\n\"", s));
+	return -1;
+}
+//[videoP - smU - Serverside - All - Redid and clientnumberfromstring for partial name recognition - End]
 /*
 ==================
 ClientNumberFromString
@@ -458,6 +613,15 @@ void Cmd_Notarget_f( gentity_t *ent ) {
 	trap_SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 }
 
+void DeletePlayerProjectiles(gentity_t *ent) {
+	int i;
+	for (i = MAX_CLIENTS; i<MAX_GENTITIES; i++) { //can be optimized more?
+		if (g_entities[i].inuse && g_entities[i].s.eType == ET_MISSILE && (g_entities[i].r.ownerNum == ent->s.number)) { //Delete (rocket) if its ours
+			G_FreeEntity(&g_entities[i]);
+			//trap->Print("This only sometimes prints.. even if we have a missile in the air.  (its num: %i, our num: %i, weap type: %i) \n", hit->r.ownerNum, ent->s.number, hit->s.weapon);
+		}
+	}
+}
 
 /*
 ==================
@@ -536,7 +700,36 @@ void Cmd_TeamTask_f( gentity_t *ent ) {
 	ClientUserinfoChanged(client);
 }
 
+void G_Kill(gentity_t *ent) {
 
+	//OSP: pause
+	if (level.pause.state != PAUSE_NONE && ent->client && !ent->client->sess.raceMode) {
+		return;
+	}
+
+	//DM - addlater - duel suicides? 
+	/*if ((level.gametype == GT_TOURNAMENT) &&
+	level.numPlayingClients > 1 && !level.warmupTime)
+	{
+	if (!g_allowDuelSuicide.integer)
+	{
+	trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "ATTEMPTDUELKILL")));
+	return;
+	}
+	}
+	else if (level.gametype >= GT_TEAM && level.numPlayingClients > 1 && !level.warmupTime)
+	{
+	if (!g_allowTeamSuicide.integer)
+	{
+	trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "ATTEMPTDUELKILL")));
+	return;
+	}
+	}*/
+
+	ent->flags &= ~FL_GODMODE;
+	ent->client->ps.stats[STAT_HEALTH] = ent->health = -999;
+	player_die(ent, ent, ent, 100000, MOD_SUICIDE);
+}
 
 /*
 =================
@@ -1823,7 +2016,7 @@ SanitizeString2
 Rich's revised version of SanitizeString
 ==================
 */
-void SanitizeString2( char *in, char *out )
+/*void SanitizeString2( char *in, char *out )
 {
 	int i = 0;
 	int r = 0;
@@ -1861,7 +2054,7 @@ void SanitizeString2( char *in, char *out )
 		i++;
 	}
 	out[r] = 0;
-}
+}*/
 
 /*
 ==================
@@ -2482,8 +2675,16 @@ int G_ItemUsable(playerState_t *ps, int forcedUse)
 
 void saberKnockDown(gentity_t *saberent, gentity_t *saberOwner, gentity_t *other);
 
+extern int saberOffSound;
+extern int saberOnSound;
+
 void Cmd_ToggleSaber_f(gentity_t *ent)
 {
+	if (!saberOffSound || !saberOnSound)
+	{
+		saberOffSound = G_SoundIndex("sound/weapons/saber/saberoffquick.wav");
+		saberOnSound = G_SoundIndex("sound/weapons/saber/saberon.wav");
+	}
 	if (ent->client->ps.fd.forceGripCripple)
 	{ //if they are being gripped, don't let them unholster their saber
 		if (ent->client->ps.saberHolstered)
@@ -2747,321 +2948,6 @@ qboolean G_OtherPlayersDueling(void)
 	return qfalse;
 }
 
-void Cmd_EngageDuel_f(gentity_t *ent)
-{
-	trace_t tr;
-	vec3_t forward, fwdOrg;
-
-	if (!g_privateDuel.integer)
-	{
-		return;
-	}
-
-	if (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL)
-	{ //rather pointless in this mode..
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NODUEL_GAMETYPE")) );
-		return;
-	}
-
-	//if (g_gametype.integer >= GT_TEAM && g_gametype.integer != GT_SIEGE)
-	if (g_gametype.integer >= GT_TEAM)
-	{ //no private dueling in team modes
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NODUEL_GAMETYPE")) );
-		return;
-	}
-
-	if (ent->client->ps.duelTime >= level.time)
-	{
-		return;
-	}
-
-	if (ent->client->ps.weapon != WP_SABER)
-	{
-		return;
-	}
-
-	/*
-	if (!ent->client->ps.saberHolstered)
-	{ //must have saber holstered at the start of the duel
-		return;
-	}
-	*/
-	//NOTE: No longer doing this..
-
-	if (ent->client->ps.saberInFlight)
-	{
-		return;
-	}
-
-	if (ent->client->ps.duelInProgress)
-	{
-		return;
-	}
-
-	// commenting out to allow multiduels!
-	/*
-	//New: Don't let a player duel if he just did and hasn't waited 10 seconds yet (note: If someone challenges him, his duel timer will reset so he can accept)
-	if (ent->client->ps.fd.privateDuelTime > level.time)
-	{
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "CANTDUEL_JUSTDID")) );
-		return;
-	}
-	*/
-
-	/*
-	if (G_OtherPlayersDueling())
-	{
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "CANTDUEL_BUSY")) );
-		return;
-	}
-	*/
-	AngleVectors( ent->client->ps.viewangles, forward, NULL, NULL );
-
-	fwdOrg[0] = ent->client->ps.origin[0] + forward[0]*256;
-	fwdOrg[1] = ent->client->ps.origin[1] + forward[1]*256;
-	fwdOrg[2] = (ent->client->ps.origin[2]+ent->client->ps.viewheight) + forward[2]*256;
-
-	trap_Trace(&tr, ent->client->ps.origin, NULL, NULL, fwdOrg, ent->s.number, MASK_PLAYERSOLID);
-
-	if (tr.fraction != 1 && tr.entityNum < MAX_CLIENTS)
-	{
-		gentity_t *challenged = &g_entities[tr.entityNum];
-
-		if (!challenged || !challenged->client || !challenged->inuse ||
-			challenged->health < 1 || challenged->client->ps.stats[STAT_HEALTH] < 1 ||
-			challenged->client->ps.weapon != WP_SABER || challenged->client->ps.duelInProgress ||
-			challenged->client->ps.saberInFlight)
-		{
-			return;
-		}
-
-		if (g_gametype.integer >= GT_TEAM && OnSameTeam(ent, challenged))
-		{
-			return;
-		}
-
-		if (challenged->client->ps.duelIndex == ent->s.number && challenged->client->ps.duelTime >= level.time)
-		{
-			trap_SendServerCommand( /*challenged-g_entities*/-1, va("print \"%s %s %s!\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
-
-			ent->client->ps.duelInProgress = qtrue;
-			challenged->client->ps.duelInProgress = qtrue;
-
-			ent->client->ps.duelTime = level.time + 2000;
-			challenged->client->ps.duelTime = level.time + 2000;
-
-			G_AddEvent(ent, EV_PRIVATE_DUEL, 1);
-			G_AddEvent(challenged, EV_PRIVATE_DUEL, 1);
-
-			//Holster their sabers now, until the duel starts (then they'll get auto-turned on to look cool)
-
-			if (!ent->client->ps.saberHolstered)
-			{
-				if (ent->client->saber[0].soundOff)
-				{
-					G_Sound(ent, CHAN_AUTO, ent->client->saber[0].soundOff);
-				}
-				if (ent->client->saber[1].soundOff &&
-					ent->client->saber[1].model[0])
-				{
-					G_Sound(ent, CHAN_AUTO, ent->client->saber[1].soundOff);
-				}
-				ent->client->ps.weaponTime = 400;
-				ent->client->ps.saberHolstered = 2;
-			}
-			if (!challenged->client->ps.saberHolstered)
-			{
-				if (challenged->client->saber[0].soundOff)
-				{
-					G_Sound(challenged, CHAN_AUTO, challenged->client->saber[0].soundOff);
-				}
-				if (challenged->client->saber[1].soundOff &&
-					challenged->client->saber[1].model[0])
-				{
-					G_Sound(challenged, CHAN_AUTO, challenged->client->saber[1].soundOff);
-				}
-				challenged->client->ps.weaponTime = 400;
-				challenged->client->ps.saberHolstered = 2;
-			}
-			if (g_duelStartHealth.integer)
-			{
-				ent->health = ent->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer;
-				ent->client->ps.stats[STAT_ARMOR] = g_duelStartArmor.integer;
-				challenged->health = challenged->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer;
-				challenged->client->ps.stats[STAT_ARMOR] = g_duelStartArmor.integer;
-			}
-			
-		}
-		else
-		{
-			//Print the message that a player has been challenged in private, only announce the actual duel initiation in private
-			trap_SendServerCommand( challenged-g_entities, va("cp \"%s ^7%s\n^2(Saber Duel)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE")) );
-			trap_SendServerCommand( ent-g_entities, va("cp \"%s ^7%s\n^2(Saber Duel)\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname) );
-		}
-
-		challenged->client->ps.fd.privateDuelTime = 0; //reset the timer in case this player just got out of a duel. He should still be able to accept the challenge.
-
-		ent->client->ps.forceHandExtend = HANDEXTEND_DUELCHALLENGE;
-		ent->client->ps.forceHandExtendTime = level.time + 1000;
-
-		ent->client->ps.duelIndex = challenged->s.number;
-		ent->client->ps.duelTime = level.time + 5000;
-	}
-}
-
-#ifndef FINAL_BUILD
-extern stringID_table_t animTable[MAX_ANIMATIONS+1];
-
-void Cmd_DebugSetSaberMove_f(gentity_t *self)
-{
-	int argNum = trap_Argc();
-	char arg[MAX_STRING_CHARS];
-
-	if (argNum < 2)
-	{
-		return;
-	}
-
-	trap_Argv( 1, arg, sizeof( arg ) );
-
-	if (!arg[0])
-	{
-		return;
-	}
-
-	self->client->ps.saberMove = atoi(arg);
-	self->client->ps.saberBlocked = BLOCKED_BOUNCE_MOVE;
-
-	if (self->client->ps.saberMove >= LS_MOVE_MAX)
-	{
-		self->client->ps.saberMove = LS_MOVE_MAX-1;
-	}
-
-	Com_Printf("Anim for move: %s\n", animTable[saberMoveData[self->client->ps.saberMove].animToUse].name);
-}
-
-void Cmd_DebugSetBodyAnim_f(gentity_t *self, int flags)
-{
-	int argNum = trap_Argc();
-	char arg[MAX_STRING_CHARS];
-	int i = 0;
-
-	if (argNum < 2)
-	{
-		return;
-	}
-
-	trap_Argv( 1, arg, sizeof( arg ) );
-
-	if (!arg[0])
-	{
-		return;
-	}
-
-	while (i < MAX_ANIMATIONS)
-	{
-		if (!Q_stricmp(arg, animTable[i].name))
-		{
-			break;
-		}
-		i++;
-	}
-
-	if (i == MAX_ANIMATIONS)
-	{
-		Com_Printf("Animation '%s' does not exist\n", arg);
-		return;
-	}
-
-	G_SetAnim(self, NULL, SETANIM_BOTH, i, flags, 0);
-
-	Com_Printf("Set body anim to %s\n", arg);
-}
-#endif
-
-void StandardSetBodyAnim(gentity_t *self, int anim, int flags)
-{
-	G_SetAnim(self, NULL, SETANIM_BOTH, anim, flags, 0);
-}
-
-void DismembermentTest(gentity_t *self);
-
-void Bot_SetForcedMovement(int bot, int forward, int right, int up);
-
-#ifndef FINAL_BUILD
-extern void DismembermentByNum(gentity_t *self, int num);
-extern void G_SetVehDamageFlags( gentity_t *veh, int shipSurf, int damageLevel );
-#endif
-
-static int G_ClientNumFromNetname(char *name)
-{
-	int i = 0;
-	gentity_t *ent;
-
-	while (i < MAX_CLIENTS)
-	{
-		ent = &g_entities[i];
-
-		if (ent->inuse && ent->client &&
-			!Q_stricmp(ent->client->pers.netname, name))
-		{
-			return ent->s.number;
-		}
-		i++;
-	}
-
-	return -1;
-}
-
-qboolean TryGrapple(gentity_t *ent)
-{
-	if (ent->client->ps.weaponTime > 0)
-	{ //weapon busy
-		return qfalse;
-	}
-	if (ent->client->ps.forceHandExtend != HANDEXTEND_NONE)
-	{ //force power or knockdown or something
-		return qfalse;
-	}
-	if (ent->client->grappleState)
-	{ //already grappling? but weapontime should be > 0 then..
-		return qfalse;
-	}
-
-	if (ent->client->ps.weapon != WP_SABER && ent->client->ps.weapon != WP_MELEE)
-	{
-		return qfalse;
-	}
-
-	if (ent->client->ps.weapon == WP_SABER && !ent->client->ps.saberHolstered)
-	{
-		Cmd_ToggleSaber_f(ent);
-		if (!ent->client->ps.saberHolstered)
-		{ //must have saber holstered
-			return qfalse;
-		}
-	}
-
-	//G_SetAnim(ent, &ent->client->pers.cmd, SETANIM_BOTH, BOTH_KYLE_PA_1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
-	G_SetAnim(ent, &ent->client->pers.cmd, SETANIM_BOTH, BOTH_KYLE_GRAB, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
-	if (ent->client->ps.torsoAnim == BOTH_KYLE_GRAB)
-	{ //providing the anim set succeeded..
-		ent->client->ps.torsoTimer += 500; //make the hand stick out a little longer than it normally would
-		if (ent->client->ps.legsAnim == ent->client->ps.torsoAnim)
-		{
-			ent->client->ps.legsTimer = ent->client->ps.torsoTimer;
-		}
-		ent->client->ps.weaponTime = ent->client->ps.torsoTimer;
-		return qtrue;
-	}
-
-	return qfalse;
-}
-
-#ifndef FINAL_BUILD
-qboolean saberKnockOutOfHand(gentity_t *saberent, gentity_t *saberOwner, vec3_t velocity);
-#endif
-
 void Cmd_ForceDuel_f(gentity_t *ent) {
 	Cmd_EngageDuel_f(ent, 1);
 }
@@ -3145,7 +3031,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)
 		return;
 
 
-	if (g_gametype.integer == GT_TOURNAMENT || g_gametype.integer >= GT_TEAM)
+	if (g_gametype.integer == g_gametype.integer >= GT_TEAM)//|| GT_TOURNAMENT)
 	{ //rather pointless in this mode..
 		if (dueltype == 0 || dueltype == 1)
 			trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", G_GetStripEdString("SVINGAME", "NODUEL_GAMETYPE")));
@@ -3378,7 +3264,162 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)
 	}
 }
 
-//[videoP - jk2PRO - Serverside - All - Aminfo Function - Start]
+#ifndef FINAL_BUILD
+extern stringID_table_t animTable[MAX_ANIMATIONS+1];
+
+void Cmd_DebugSetSaberMove_f(gentity_t *self)
+{
+	int argNum = trap_Argc();
+	char arg[MAX_STRING_CHARS];
+
+	if (argNum < 2)
+	{
+		return;
+	}
+
+	trap_Argv( 1, arg, sizeof( arg ) );
+
+	if (!arg[0])
+	{
+		return;
+	}
+
+	self->client->ps.saberMove = atoi(arg);
+	self->client->ps.saberBlocked = BLOCKED_BOUNCE_MOVE;
+
+	if (self->client->ps.saberMove >= LS_MOVE_MAX)
+	{
+		self->client->ps.saberMove = LS_MOVE_MAX-1;
+	}
+
+	Com_Printf("Anim for move: %s\n", animTable[saberMoveData[self->client->ps.saberMove].animToUse].name);
+}
+
+void Cmd_DebugSetBodyAnim_f(gentity_t *self, int flags)
+{
+	int argNum = trap_Argc();
+	char arg[MAX_STRING_CHARS];
+	int i = 0;
+
+	if (argNum < 2)
+	{
+		return;
+	}
+
+	trap_Argv( 1, arg, sizeof( arg ) );
+
+	if (!arg[0])
+	{
+		return;
+	}
+
+	while (i < MAX_ANIMATIONS)
+	{
+		if (!Q_stricmp(arg, animTable[i].name))
+		{
+			break;
+		}
+		i++;
+	}
+
+	if (i == MAX_ANIMATIONS)
+	{
+		Com_Printf("Animation '%s' does not exist\n", arg);
+		return;
+	}
+
+	G_SetAnim(self, NULL, SETANIM_BOTH, i, flags, 0);
+
+	Com_Printf("Set body anim to %s\n", arg);
+}
+#endif
+
+void StandardSetBodyAnim(gentity_t *self, int anim, int flags)
+{
+	G_SetAnim(self, NULL, SETANIM_BOTH, anim, flags, 0);
+}
+
+void DismembermentTest(gentity_t *self);
+
+void Bot_SetForcedMovement(int bot, int forward, int right, int up);
+
+#ifndef FINAL_BUILD
+extern void DismembermentByNum(gentity_t *self, int num);
+extern void G_SetVehDamageFlags( gentity_t *veh, int shipSurf, int damageLevel );
+#endif
+
+static int G_ClientNumFromNetname(char *name)
+{
+	int i = 0;
+	gentity_t *ent;
+
+	while (i < MAX_CLIENTS)
+	{
+		ent = &g_entities[i];
+
+		if (ent->inuse && ent->client &&
+			!Q_stricmp(ent->client->pers.netname, name))
+		{
+			return ent->s.number;
+		}
+		i++;
+	}
+
+	return -1;
+}
+
+qboolean TryGrapple(gentity_t *ent)
+{
+	if (ent->client->ps.weaponTime > 0)
+	{ //weapon busy
+		return qfalse;
+	}
+	if (ent->client->ps.forceHandExtend != HANDEXTEND_NONE)
+	{ //force power or knockdown or something
+		return qfalse;
+	}
+	if (ent->client->grappleState)
+	{ //already grappling? but weapontime should be > 0 then..
+		return qfalse;
+	}
+
+	if (ent->client->ps.weapon != WP_SABER && ent->client->ps.weapon != WP_MELEE)
+	{
+		return qfalse;
+	}
+
+	if (ent->client->ps.weapon == WP_SABER && !ent->client->ps.saberHolstered)
+	{
+		Cmd_ToggleSaber_f(ent);
+		if (!ent->client->ps.saberHolstered)
+		{ //must have saber holstered
+			return qfalse;
+		}
+	}
+
+	//G_SetAnim(ent, &ent->client->pers.cmd, SETANIM_BOTH, BOTH_KYLE_PA_1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
+	G_SetAnim(ent, &ent->client->pers.cmd, SETANIM_BOTH, BOTH_KYLE_GRAB, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
+	if (ent->client->ps.torsoAnim == BOTH_KYLE_GRAB)
+	{ //providing the anim set succeeded..
+		ent->client->ps.torsoTimer += 500; //make the hand stick out a little longer than it normally would
+		if (ent->client->ps.legsAnim == ent->client->ps.torsoAnim)
+		{
+			ent->client->ps.legsTimer = ent->client->ps.torsoTimer;
+		}
+		ent->client->ps.weaponTime = ent->client->ps.torsoTimer;
+		return qtrue;
+	}
+
+	return qfalse;
+}
+
+#ifndef FINAL_BUILD
+qboolean saberKnockOutOfHand(gentity_t *saberent, gentity_t *saberOwner, vec3_t velocity);
+#endif
+
+
+
+//[videoP - smU - Serverside - All - Aminfo Function - Start]
 /*
 =================
 Cmd_Aminfo_f
@@ -3466,7 +3507,7 @@ void Cmd_Amlogin_f(gentity_t *ent)
 //[videoP - smU - Serverside - All - Amlogin Function - End]
 
 //[videoP - smU - Serverside - All - Movement Function - Start]
-int RaceNameToInteger(char *style);
+/*int RaceNameToInteger(char *style);
 static void Cmd_MovementStyle_f(gentity_t *ent)
 {
 	char mStyle[32];
@@ -3485,12 +3526,12 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 	}
 
-	/*
-	if (level.gametype != GT_FFA) {
-	trap->SendServerCommand(ent-g_entities, "print \"This command is not allowed in this gametype!\n\"");
-	return;
-	}
-	*/
+	
+	//if (level.gametype != GT_FFA) {
+	//trap->SendServerCommand(ent-g_entities, "print \"This command is not allowed in this gametype!\n\"");
+	//return;
+	//}
+	
 
 	if (!ent->client->sess.raceMode) {
 		trap_SendServerCommand(ent - g_entities, "print \"You must be in racemode to use this command!\n\"");
@@ -3567,7 +3608,7 @@ static void Cmd_JumpChange_f(gentity_t *ent)
 	}
 	else
 		trap_SendServerCommand(ent - g_entities, "print \"Usage: /jump <level>\n\"");
-}
+}*/
 //[videoP - smU - Serverside - All - Movement & Jump Command Functions - End]
 
 //[videoP - smU - Serverside - All - RaceTele Function - Start]

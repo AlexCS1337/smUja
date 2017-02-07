@@ -4139,10 +4139,155 @@ const char *G_GetStringEdString(char *refSection, char *refName)
 
 	//Well, it would've been lovely doing it the above way, but it would mean mixing
 	//languages for the client depending on what the server is. So we'll mark this as
-	//a stringed reference with @@@ and send the refname to the client, and when it goes
-	//to print it will get scanned for the stringed reference indication and dealt with
+	//a striped reference with @@@ and send the refname to the client, and when it goes
+	//to print it will get scanned for the striped reference indication and dealt with
 	//properly.
-	static char text[1024]={0};
+	static char text[1024] = { 0 };
 	Com_sprintf(text, sizeof(text), "@@@%s", refName);
 	return text;
+}
+
+const char *G_GetStripEdString(char *refSection, char *refName)
+{
+	/*
+	static char text[1024]={0};
+	trap_SP_GetStringTextString(va("%s_%s", refSection, refName), text, sizeof(text));
+	return text;
+	*/
+
+	//Well, it would've been lovely doing it the above way, but it would mean mixing
+	//languages for the client depending on what the server is. So we'll mark this as
+	//a striped reference with @@@ and send the refname to the client, and when it goes
+	//to print it will get scanned for the striped reference indication and dealt with
+	//properly.
+	static char text[1024] = { 0 };
+	Com_sprintf(text, sizeof(text), "@@@%s", refName);
+	return text;
+}
+
+
+
+/*
+==============================
+saved - used to hold ownerNums
+==============================
+*/
+static int saved[MAX_GENTITIES];
+
+
+
+/*
+============================================
+BeginHack
+This abuses ownerNum to allow nonsolid duels
+(used by trace functions)
+============================================
+*/
+static /*QINLINE*/ void BeginHack(int entityNum)
+{
+	// since we are in a duel, make everyone else nonsolid
+	if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].ps.duelInProgress) {
+		int i;
+		for (i = 0; i < level.num_entities; i++) { //This is numentities not max_clients because of NPCS
+			if (i != entityNum && i != level.clients[entityNum].ps.duelIndex) {
+				if (g_entities[i].inuse &&
+					((g_entities[i].s.eType == ET_PLAYER) ||
+					((dueltypes[level.clients[entityNum].ps.clientNum] <= 1) && g_entities[i].s.eType == ET_GENERAL && (!Q_stricmp(g_entities[i].classname, "laserTrap"))))) {
+					saved[i] = g_entities[i].r.ownerNum;
+					g_entities[i].r.ownerNum = entityNum;
+				}
+			}
+		}
+	}
+	else if (g_entities[entityNum].client && g_entities[entityNum].client->sess.raceMode) { //Have to check all entities because swoops can be racemode too :/
+		int i;
+		for (i = 0; i < level.num_entities; i++) { ////This is numentities not max_clients because of NPCS
+			if (i != entityNum) {
+				if (g_entities[i].inuse &&
+					((g_entities[i].s.eType == ET_PLAYER) ||
+					(g_entities[i].s.eType == ET_MOVER && ((!Q_stricmp(g_entities[i].classname, "func_door") || !Q_stricmp(g_entities[i].classname, "func_plat")))) ||
+						(g_entities[i].s.eType == ET_GENERAL && (!Q_stricmp(g_entities[i].classname, "laserTrap")))))
+				{
+					saved[i] = g_entities[i].r.ownerNum;
+					g_entities[i].r.ownerNum = entityNum;
+				}
+			}
+		}
+	}
+	else { // we are not dueling but make those that are nonsolid
+		int i;
+		if (g_entities[entityNum].inuse) {//Saber
+			const int saberOwner = g_entities[entityNum].r.ownerNum;//Saberowner
+			if (g_entities[saberOwner].client && g_entities[saberOwner].client->ps.duelInProgress) {
+				return;
+			}
+		}
+		for (i = 0; i < level.num_entities; i++) { //loda fixme? This should go through all entities... to also account for people lightsabers..? or is that too costly
+			if (i != entityNum) {
+				if (g_entities[i].inuse && g_entities[i].client &&
+					(g_entities[i].client->ps.duelInProgress || g_entities[i].client->sess.raceMode)) { //loda fixme? Or the ent is a saber, and its owner is in racemode or duel in progress
+					saved[i] = g_entities[i].r.ownerNum;
+					g_entities[i].r.ownerNum = entityNum;
+				}
+			}
+		}
+	}
+}
+
+/*
+==========================================
+EndHack
+This cleans up the damage BeginHack caused
+==========================================
+*/
+static /*QINLINE*/ void EndHack(int entityNum) { //Should be inline?
+	if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].ps.duelInProgress) {
+		int i;
+		for (i = 0; i < level.num_entities; i++) {
+			if (i != entityNum && i != level.clients[entityNum].ps.duelIndex) {
+				if (g_entities[i].inuse &&
+					((g_entities[i].s.eType == ET_PLAYER) ||
+					((dueltypes[level.clients[entityNum].ps.clientNum] <= 1) && g_entities[i].s.eType == ET_GENERAL && (!Q_stricmp(g_entities[i].classname, "laserTrap"))))) {
+					g_entities[i].r.ownerNum = saved[i];
+				}
+			}
+		}
+	}
+	else if (g_entities[entityNum].client && g_entities[entityNum].client->sess.raceMode) {
+		int i;
+		for (i = 0; i < level.num_entities; i++) {
+			if (i != entityNum) {
+				if (g_entities[i].inuse &&
+					((g_entities[i].s.eType == ET_PLAYER) ||
+					(g_entities[i].s.eType == ET_MOVER && ((!Q_stricmp(g_entities[i].classname, "func_door") || !Q_stricmp(g_entities[i].classname, "func_plat")))) ||
+						(g_entities[i].s.eType == ET_GENERAL && (!Q_stricmp(g_entities[i].classname, "laserTrap")))))
+				{
+					g_entities[i].r.ownerNum = saved[i];
+				}
+			}
+		}
+	}
+	else {
+		int i;
+		if (g_entities[entityNum].inuse) {//Saber
+			const int saberOwner = g_entities[entityNum].r.ownerNum;//Saberowner
+			if (g_entities[saberOwner].client && g_entities[saberOwner].client->ps.duelInProgress) {
+				return;
+			}
+		}
+		for (i = 0; i < level.num_entities; i++) {
+			if (i != entityNum) {
+				if (g_entities[i].inuse && g_entities[i].client &&
+					(g_entities[i].client->ps.duelInProgress || g_entities[i].client->sess.raceMode)) {
+					g_entities[i].r.ownerNum = saved[i];
+				}
+			}
+		}
+	}
+}
+
+void JP_Trace(trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask, int capsule, int traceFlags, int useLod) {
+	BeginHack(passEntityNum);
+	trap_Trace(results, start, mins, maxs, end, passEntityNum, contentmask);
+	EndHack(passEntityNum);
 }

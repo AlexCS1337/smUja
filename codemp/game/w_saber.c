@@ -16,6 +16,9 @@ extern vmCvar_t		g_debugSaberLocks;
 extern vmCvar_t		g_saberWallDamageScale;
 
 int saberSpinSound = 0;
+int saberOffSound = 0;
+int saberOnSound = 0;
+int saberHumSound = 0;
 
 //would be cleaner if these were renamed to BG_ and proto'd in a header.
 #include "../namespace_begin.h"
