@@ -141,7 +141,12 @@ extern int gEscapeTime;
 
 extern int dueltypes[MAX_CLIENTS];//smU/JAPRO - Serverside - Fullforce Duels y is this extern
 
-//sMod tweaks (too be implemented)
+
+//[smU - Serverside - All - Jcinfo bitvalues
+#define smU_CINFO_FLIPKICK	(1<<0) //Allow player flipkicking (normal style)
+#define JAPRO_CINFO_FIXSIDEKICK	(1<<6) //allow flipkick with slow sidekick style
+
+//smU tweaks (too be implemented)
 
 /*
 //Force Tweaks
@@ -164,23 +169,23 @@ extern int dueltypes[MAX_CLIENTS];//smU/JAPRO - Serverside - Fullforce Duels y i
 
 //Saber tweaks
 
-#define	ST_NO_MP_SABERLERP		(1<<0)
-#define ST_JK2_DMGSYSTEM		(1<<1)
-#define ST_REDUCE_SABERBLOCK	(1<<2)
-#define	ST_REDUCE_SABERDROP		(1<<3)
-#define ST_ALLOW_ROLLCANCEL		(1<<4) //CLIENT
-#define ST_NO_REDCHAIN			(1<<5)
-#define ST_FIXED_SABERSWITCH	(1<<6)
-#define ST_EASYBACKSLASH		(1<<7)
-#define ST_JK2RDFA				(1<<8)
-#define ST_FIXYELLOWDFA			(1<<9)
-#define ST_SPINREDDFA			(1<<10)
-#define ST_SPINBACKSLASH		(1<<11)
-#define ST_JK2LUNGE				(1<<12)
-#define ST_REDDFAFIX			(1<<13)
-#define ST_REDDFANOFORCE		(1<<14)
-#define ST_EASIERBACKSLASH		(1<<15)
-#define ST_SABERGUN				(1<<16)
+//#define	ST_NO_MP_SABERLERP		(1<<0)
+//#define ST_JK2_DMGSYSTEM		(1<<1)
+//#define ST_REDUCE_SABERBLOCK	(1<<2)
+//#define	ST_REDUCE_SABERDROP		(1<<3)
+//#define ST_ALLOW_ROLLCANCEL		(1<<4) //CLIENT
+//#define ST_NO_REDCHAIN			(1<<5)
+//#define ST_FIXED_SABERSWITCH	(1<<6)
+//#define ST_EASYBACKSLASH		(1<<7)
+//#define ST_JK2RDFA				(1<<8)
+//#define ST_FIXYELLOWDFA			(1<<9)
+//#define ST_SPINREDDFA			(1<<10)
+//#define ST_SPINBACKSLASH		(1<<11)
+//#define ST_JK2LUNGE				(1<<12)
+//#define ST_REDDFAFIX			(1<<13)
+//#define ST_REDDFANOFORCE		(1<<14)
+//#define ST_EASIERBACKSLASH		(1<<15)
+//#define ST_SABERGUN				(1<<16)
 
 /*
 //Saberstyles
@@ -530,6 +535,7 @@ typedef struct {
 
 	int			connectTime;
 
+	qboolean	isJAPRO;//JAPRO - Serverside - Add Clientside Version
 	/*qboolean	issmU;//smU - Serverside - Add Clientside Version
 	qboolean	JAWARUN;//JAPRO - Serverside - Add Clientside Version
 	qboolean	centerMuzzle;//JAPRO - Serverside - Check if client wants to center muzzlepoint.

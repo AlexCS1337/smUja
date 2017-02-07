@@ -184,13 +184,13 @@ static int GetFlipkick(playerState_t *ps) {
 				return 0;
 			}
 		}
-		if (cgs.jcinfo & JAPRO_CINFO_FLIPKICK) {
-			if (cgs.jcinfo & JAPRO_CINFO_FIXSIDEKICK)
+		if (cgs.jcinfo & smU_CINFO_FLIPKICK) {
+			if (cgs.jcinfo & smI_CINFO_FIXSIDEKICK)
 				return 3;
 			return 2; //1 ans 2 are the same thing clientside...hmm
 		}
 	}
-	if (cgs.isJAPlus && (cgs.cinfo & JAPLUS_CINFO_FLIPKICK))
+	if (cgs.isJAPlus && (cgs.cinfo & smU_CINFO_FLIPKICK))
 		return 1;
 
 	return 0;*/
