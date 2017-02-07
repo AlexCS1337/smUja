@@ -3062,6 +3062,926 @@ qboolean TryGrapple(gentity_t *ent)
 qboolean saberKnockOutOfHand(gentity_t *saberent, gentity_t *saberOwner, vec3_t velocity);
 #endif
 
+void Cmd_ForceDuel_f(gentity_t *ent) {
+	Cmd_EngageDuel_f(ent, 1);
+}
+
+void Cmd_GunDuel_f(gentity_t *ent)
+{
+	char weapStr[64];//Idk, could be less
+	int weap = WP_NONE;
+
+	if (!g_allowGunDuel.integer) {
+		trap_SendServerCommand(ent - g_entities, "print \"Command not allowed. (gunduel).\n\"");
+		return;
+	}
+
+	if (trap_Argc() > 2)
+	{
+		trap_SendServerCommand(ent - g_entities, "print \"Usage: /engage_gunduel or engage_gunduel <weapon name>.\n\"");
+		return;
+	}
+
+	if (trap_Argc() == 1)//Use current weapon
+	{
+		weap = ent->s.weapon;
+		if (weap > LAST_USEABLE_WEAPON) //last usable is 16
+			weap = WP_NONE;
+	}
+	else if (trap_Argc() == 2)//Use specified weapon
+	{
+		int i = 0;
+		trap_Argv(1, weapStr, sizeof(weapStr));
+
+		while (weapStr[i]) {
+			weapStr[i] = tolower(weapStr[i]);
+			i++;
+		}
+
+		if (!Q_stricmp("stun", weapStr) || !Q_stricmp("stunbaton", weapStr))
+			weap = WP_STUN_BATON; //+ 14; //16 //17
+		else if (!Q_stricmp("pistol", weapStr) || !Q_stricmp("bryar", weapStr))
+			weap = WP_BRYAR_PISTOL;
+		else if (!Q_stricmp("blaster", weapStr) || !Q_stricmp("e11", weapStr))
+			weap = WP_BLASTER;
+		else if (!Q_stricmp("sniper", weapStr) || !Q_stricmp("disruptor", weapStr))
+			weap = WP_DISRUPTOR;
+		else if (!Q_stricmp("bowcaster", weapStr))
+			weap = WP_BOWCASTER;
+		else if (!Q_stricmp("repeater", weapStr))
+			weap = WP_REPEATER;
+		else if (!Q_stricmp("demp2", weapStr) || !Q_stricmp("demp", weapStr))
+			weap = WP_DEMP2;
+		else if (!Q_stricmp("flechette", weapStr) || !Q_stricmp("shotgun", weapStr))
+			weap = WP_FLECHETTE;
+		else if (!Q_stricmp("rocket", weapStr) || !Q_stricmp("rockets", weapStr) || !Q_stricmp("rocketlauncher", weapStr))
+			weap = WP_ROCKET_LAUNCHER;
+		else if (!Q_stricmp("detpack", weapStr) || !Q_stricmp("detpacks", weapStr))
+			weap = WP_DET_PACK;
+		else if (!Q_stricmp("thermal", weapStr) || !Q_stricmp("thermals", weapStr) || !Q_stricmp("grenade", weapStr) || !Q_stricmp("grenades", weapStr) || !Q_stricmp("dets", weapStr))
+			weap = WP_THERMAL;
+		else if (!Q_stricmp("tripmine", weapStr) || !Q_stricmp("trip", weapStr) || !Q_stricmp("trips", weapStr))
+			weap = WP_TRIP_MINE;
+		else if (!Q_stricmp("all", weapStr))
+			weap = LAST_USEABLE_WEAPON + 3; //16
+
+	}
+
+	if (weap == WP_NONE || weap == WP_SABER || (weap > (LAST_USEABLE_WEAPON + 3))) {
+		//trap_SendServerCommand( ent-g_entities, "print \"Invalid weapon specified, using default case: Bryar\n\"" );
+		weap = WP_BRYAR_PISTOL;//pff
+	}
+
+	Cmd_EngageDuel_f(ent, weap + 1);//Fuck it right here
+}
+
+void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)
+{
+	trace_t tr;
+	vec3_t forward, fwdOrg;
+
+	//Private duel cvar on? Check this first
+	if (!g_privateDuel.integer)
+		return;
+
+
+	if (g_gametype.integer == GT_TOURNAMENT || g_gametype.integer >= GT_TEAM)
+	{ //rather pointless in this mode..
+		if (dueltype == 0 || dueltype == 1)
+			trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", G_GetStripEdString("SVINGAME", "NODUEL_GAMETYPE")));
+		else
+			trap_SendServerCommand(ent - g_entities, "print \"This gametype does not support gun dueling.\n\"");
+		return;
+	}
+
+	if (ent->client->ps.duelTime >= level.time)
+		return;
+
+	if ((dueltype == 0 || dueltype == 1) && ent->client->ps.weapon != WP_SABER)
+		return;
+
+	/*
+	if (!ent->client->ps.saberHolstered)
+	{ //must have saber holstered at the start of the duel
+	return;
+	}
+	*/
+	//NOTE: No longer doing this..
+
+	if (ent->client->ps.saberInFlight)
+		return;
+
+	if (ent->client->sess.sessionTeam == TEAM_SPECTATOR)
+		return;
+
+	if (ent->client->ps.duelInProgress)
+		return;
+
+	if (ent->client->sess.raceMode)
+		return;
+
+	/*//New: Don't let a player duel if he just did and hasn't waited 10 seconds yet (note: If someone challenges him, his duel timer will reset so he can accept)
+	if (ent->client->ps.fd.privateDuelTime > level.time)
+	{
+	trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStripEdString("SVINGAME", "CANTDUEL_JUSTDID")) );
+	return;
+	}
+	if (G_OtherPlayersDueling())
+	{
+	trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStripEdString("SVINGAME", "CANTDUEL_BUSY")) );
+	return;
+	}*/
+
+	AngleVectors(ent->client->ps.viewangles, forward, NULL, NULL);
+
+	fwdOrg[0] = ent->client->ps.origin[0] + forward[0] * 256;
+	fwdOrg[1] = ent->client->ps.origin[1] + forward[1] * 256;
+	fwdOrg[2] = (ent->client->ps.origin[2] + ent->client->ps.viewheight) + forward[2] * 256;
+
+	JP_Trace(&tr, ent->client->ps.origin, NULL, NULL, fwdOrg, ent->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
+
+	if (tr.fraction != 1 && tr.entityNum < MAX_CLIENTS)
+	{
+		gentity_t *challenged = &g_entities[tr.entityNum];
+
+		if (!challenged || !challenged->client || !challenged->inuse ||
+			challenged->health < 1 || challenged->client->ps.stats[STAT_HEALTH] < 1 ||
+			(challenged->client->ps.weapon != WP_SABER && (dueltype == 0 || dueltype == 1)) || challenged->client->ps.duelInProgress ||
+			challenged->client->ps.saberInFlight)
+		{
+			return;
+		}
+
+		if (g_gametype.integer >= GT_TEAM && OnSameTeam(ent, challenged))
+			return;
+
+		ent->client->ps.forceHandExtend = HANDEXTEND_DUELCHALLENGE;
+		ent->client->ps.forceHandExtendTime = level.time + 1000; //Moved this up here
+
+																 //jk2PRO - Serverside - Fullforce Duels + Duel Messages - Start
+		if (challenged->client->ps.duelIndex == ent->s.number && (challenged->client->ps.duelTime + 2000) >= level.time &&
+			(
+			((dueltypes[challenged->client->ps.clientNum] == dueltype) && (dueltype == 0 || dueltype == 1))
+				||
+				(dueltypes[challenged->client->ps.clientNum] != 0 && (dueltypes[challenged->client->ps.clientNum] != 1) && dueltype > 1)
+				))
+		{
+			//trap_SendServerCommand( /*challenged-g_entities*/-1, va("print \"%s %s %s!\n\"", challenged->client->pers.netname, G_GetStripEdString("SVINGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
+
+			ent->client->ps.duelInProgress = qtrue;
+			challenged->client->ps.duelInProgress = qtrue;
+
+			if (dueltype == 0 || dueltype == 1)
+				dueltypes[ent->client->ps.clientNum] = dueltype;//why isn't this syncing the weapons they use? gun duels
+			else {
+				dueltypes[ent->client->ps.clientNum] = dueltypes[challenged->client->ps.clientNum];//dueltype;//okay this is why
+			}
+
+			ent->client->ps.duelTime = level.time + 2000; //loda fixme
+			challenged->client->ps.duelTime = level.time + 2000; //loda fixme
+
+			switch (dueltype)
+			{
+			case 0:
+				//Saber Duel
+				G_AddEvent(ent, EV_PRIVATE_DUEL, 0);
+				G_AddEvent(challenged, EV_PRIVATE_DUEL, 0);
+				trap_SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Saber)\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname));
+				break;
+			case 1://FF Duel
+				G_AddEvent(ent, EV_PRIVATE_DUEL, 1);
+				G_AddEvent(challenged, EV_PRIVATE_DUEL, 1);
+				//trap_SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Force)\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname));
+				break;
+			default://Gun Duel
+				G_AddEvent(ent, EV_PRIVATE_DUEL, dueltypes[ent->client->ps.clientNum]);
+				G_AddEvent(challenged, EV_PRIVATE_DUEL, dueltypes[challenged->client->ps.clientNum]);
+				trap_SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Gun)\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname));
+				break;
+			}
+
+			//Old stuff, the switch above replaces this :)
+			//G_AddEvent(ent, EV_PRIVATE_DUEL, 1);
+			//G_AddEvent(challenged, EV_PRIVATE_DUEL, 1);
+
+			//Holster their sabers now, until the duel starts (then they'll get auto-turned on to look cool)
+
+			if (!ent->client->ps.saberHolstered)
+			{
+				G_Sound(ent, CHAN_AUTO, saberOffSound);
+				ent->client->ps.weaponTime = 400;
+				ent->client->ps.saberHolstered = qtrue;
+			}
+			if (!challenged->client->ps.saberHolstered)
+			{
+				G_Sound(challenged, CHAN_AUTO, saberOffSound);
+				challenged->client->ps.weaponTime = 400;
+				challenged->client->ps.saberHolstered = qtrue;
+			}
+			if (g_duelStartHealth.integer)
+			{
+				ent->health = ent->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer;
+				challenged->health = challenged->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer;
+			}
+			if (g_duelStartArmor.integer)
+			{
+				ent->client->ps.stats[STAT_ARMOR] = g_duelStartArmor.integer;
+				challenged->client->ps.stats[STAT_ARMOR] = g_duelStartArmor.integer;
+			}
+
+			ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax;
+			challenged->client->ps.fd.forcePower = challenged->client->ps.fd.forcePowerMax;//Give them both max force power!
+
+			ent->client->ps.fd.forceRageRecoveryTime = 0;
+			challenged->client->ps.fd.forceRageRecoveryTime = 0; //Get rid of rage recovery when duel starts!
+			if (dueltypes[challenged->client->ps.clientNum] > 1) { //2) { //1 ?
+				int weapon = dueltypes[challenged->client->ps.clientNum] - 1; // - 2;
+				if (weapon == LAST_USEABLE_WEAPON + 3) { //All weapons and ammo.
+					int i;
+					for (i = 1; i <= LAST_USEABLE_WEAPON; i++) {
+						ent->client->ps.stats[STAT_WEAPONS] |= (1 << i);
+						challenged->client->ps.stats[STAT_WEAPONS] |= (1 << i);
+					}
+					ent->client->ps.ammo[AMMO_BLASTER] = challenged->client->ps.ammo[AMMO_BLASTER] = 300;
+					ent->client->ps.ammo[AMMO_POWERCELL] = challenged->client->ps.ammo[AMMO_POWERCELL] = 300;
+					ent->client->ps.ammo[AMMO_METAL_BOLTS] = challenged->client->ps.ammo[AMMO_METAL_BOLTS] = 300;
+					ent->client->ps.ammo[AMMO_ROCKETS] = challenged->client->ps.ammo[AMMO_ROCKETS] = 10;//hm
+					ent->client->ps.ammo[AMMO_THERMAL] = challenged->client->ps.ammo[AMMO_THERMAL] = 10;
+					ent->client->ps.ammo[AMMO_TRIPMINE] = challenged->client->ps.ammo[AMMO_TRIPMINE] = 10;
+					ent->client->ps.ammo[AMMO_DETPACK] = challenged->client->ps.ammo[AMMO_DETPACK] = 10;
+				}
+				else if (weapon != WP_STUN_BATON) {
+					ent->client->ps.ammo[weaponData[weapon].ammoIndex] = 999; //gun duel ammo
+					challenged->client->ps.ammo[weaponData[weapon].ammoIndex] = 999; //gun duel ammo
+				}
+
+				ent->client->ps.forceHandExtend = HANDEXTEND_DUELCHALLENGE;
+				challenged->client->ps.forceHandExtend = HANDEXTEND_DUELCHALLENGE;
+				ent->client->ps.forceHandExtendTime = level.time + 2000;
+				challenged->client->ps.forceHandExtendTime = level.time + 2000; //2 seconds of weaponlock at start of duel
+			}
+
+			Q_strncpyz(ent->client->pers.lastUserName, ent->client->pers.userName, sizeof(ent->client->pers.lastUserName));
+			Q_strncpyz(challenged->client->pers.lastUserName, challenged->client->pers.userName, sizeof(challenged->client->pers.lastUserName));
+			ent->client->pers.duelStartTime = level.time;
+			challenged->client->pers.duelStartTime = level.time;
+		}
+		else
+		{
+			char weapStr[64];
+			//Print the message that a player has been challenged in private, only announce the actual duel initiation in private
+			switch (dueltype) {
+			case 0:
+				trap_SendServerCommand(challenged - g_entities, va("cp \"%s ^7%s\n^2(Saber Duel)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE")));
+				trap_SendServerCommand(ent - g_entities, va("cp \"%s %s\n^2(Saber Duel)\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname));
+				break;
+			case 1:
+				trap_SendServerCommand(challenged - g_entities, va("cp \"%s ^7%s\n^4(Force Duel)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE")));
+				trap_SendServerCommand(ent - g_entities, va("cp \"%s %s\n^4(Force Duel)\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname));
+				break;
+			default:
+				switch (dueltype - 1) {
+				case 1:	Com_sprintf(weapStr, sizeof(weapStr), "Stun baton"); break;
+				case 3:	Com_sprintf(weapStr, sizeof(weapStr), "Bryar"); break;
+				case 4:	Com_sprintf(weapStr, sizeof(weapStr), "E11"); break;
+				case 5:	Com_sprintf(weapStr, sizeof(weapStr), "Sniper"); break;
+				case 6:	Com_sprintf(weapStr, sizeof(weapStr), "Bowcaster");	break;
+				case 7:	Com_sprintf(weapStr, sizeof(weapStr), "Repeater"); break;
+				case 8:	Com_sprintf(weapStr, sizeof(weapStr), "Demp2");	break;
+				case 9: Com_sprintf(weapStr, sizeof(weapStr), "Flechette"); break;
+				case 10: Com_sprintf(weapStr, sizeof(weapStr), "Rocket"); break;
+				case 11: Com_sprintf(weapStr, sizeof(weapStr), "Thermal"); break;
+				case 12: Com_sprintf(weapStr, sizeof(weapStr), "Tripmine"); break;
+				case 13: Com_sprintf(weapStr, sizeof(weapStr), "Detpack"); break;
+				default: Com_sprintf(weapStr, sizeof(weapStr), "Gun"); break;
+				}
+				trap_SendServerCommand(challenged - g_entities, va("cp \"%s ^7%s\n^4(%s Duel)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE"), weapStr));
+				trap_SendServerCommand(ent - g_entities, va("cp \"%s %s\n^4(%s Duel)\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname, weapStr));
+				break;
+			}
+			//trap_SendServerCommand( challenged-g_entities, va("cp \"%s %s\n\"", ent->client->pers.netname, G_GetStripEdString("SVINGAME", "PLDUELCHALLENGE")) );
+			//trap_SendServerCommand( ent-g_entities, va("cp \"%s %s\n\"", G_GetStripEdString("SVINGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname) );
+		}
+		//jk2PRO - Serverside - Fullforce Duels + Duel Messages - End
+
+		challenged->client->ps.fd.privateDuelTime = 0; //reset the timer in case this player just got out of a duel. He should still be able to accept the challenge.
+
+													   //ent->client->ps.forceHandExtend = HANDEXTEND_DUELCHALLENGE;
+													   //ent->client->ps.forceHandExtendTime = level.time + 1000;
+
+		ent->client->ps.duelIndex = challenged->s.number;
+		ent->client->ps.duelTime = level.time + 2000;//Is this where the freeze comes from?
+		if (dueltype == 0 || dueltype == 1)
+			dueltypes[ent->client->ps.clientNum] = dueltype;
+		else if (!ent->client->ps.duelInProgress)
+			dueltypes[ent->client->ps.clientNum] = dueltype;
+	}
+}
+
+//[videoP - jk2PRO - Serverside - All - Aminfo Function - Start]
+/*
+=================
+Cmd_Aminfo_f
+=================
+*/
+void Cmd_Aminfo_f(gentity_t *ent)
+{
+	char buf[MAX_STRING_CHARS - 64] = { 0 };
+
+	if (!ent || !ent->client)
+		return;
+
+	//Q_strncpyz(buf, va("^5 Hi there, %s^5.  This server is using the jk2PRO mod.\n", ent->client->pers.netname), sizeof(buf));
+	trap_SendServerCommand(ent->client->ps.clientNum, va("print \"^5 Hi there, %s^5.  This server is using the jk2PRO mod.\n\n\"", ent->client->pers.netname));
+	trap_SendServerCommand(ent->client->ps.clientNum, va("print \"^3Have you tried out Full Force Duel Mode yet? Use /engage_fullforceduel while looking at your opponent\n\""));
+	trap_SendServerCommand(ent->client->ps.clientNum, va("print \"^3to challenge them to a FF duel.  Also try out /engage_gunduel! You can even bind these commands!\n\""));
+	return;
+}
+//[videoP - smU - Serverside - All - Aminfo Function - End]
+
+//[videoP - smU - Serverside - All - Amlogin Function - Start]
+/*
+=================
+Cmd_Amlogin_f
+=================
+*/
+void Cmd_Amlogin_f(gentity_t *ent)
+{
+	char	pass[MAX_STRING_CHARS];
+
+	trap_Argv(1, pass, sizeof(pass)); //Password
+
+	if (!ent->client)
+		return;
+
+	if (trap_Argc() == 1)
+	{
+		trap_SendServerCommand(ent - g_entities, "print \"Usage: amLogin <password>\n\"");
+		return;
+	}
+	if (trap_Argc() == 2)
+	{
+		if (ent->client->sess.juniorAdmin || ent->client->sess.fullAdmin)
+		{
+			trap_SendServerCommand(ent - g_entities, "print \"You are already logged in. Type in /amLogout to remove admin status.\n\"");
+			return;
+		}
+		if (!Q_stricmp(pass, ""))
+		{
+			trap_SendServerCommand(ent - g_entities, "print \"Usage: amLogin <password>\n\"");
+			return;
+		}
+		if (!Q_stricmp(pass, g_fullAdminPass.string))
+		{
+			if (!Q_stricmp("", g_fullAdminPass.string))
+				return;
+			ent->client->sess.fullAdmin = qtrue;
+			trap_SendServerCommand(ent - g_entities, "print \"^2You are now logged in with full admin privileges.\n\"");
+			if (Q_stricmp(g_fullAdminMsg.string, ""))
+				trap_SendServerCommand(-1, va("print \"%s ^7%s\n\"", ent->client->pers.netname, g_fullAdminMsg.string));
+			return;
+		}
+		if (!Q_stricmp(pass, g_juniorAdminPass.string))
+		{
+			if (!Q_stricmp("", g_juniorAdminPass.string))
+				return;
+			ent->client->sess.juniorAdmin = qtrue;
+			trap_SendServerCommand(ent - g_entities, "print \"^2You are now logged in with junior admin privileges.\n\"");
+			if (Q_stricmp(g_juniorAdminMsg.string, ""))
+				trap_SendServerCommand(-1, va("print \"%s ^7%s\n\"", ent->client->pers.netname, g_juniorAdminMsg.string));
+			return;
+		}
+		else
+		{
+			trap_SendServerCommand(ent - g_entities, "print \"^3Failed to log in: Incorrect password!\n\"");
+			return;
+		}
+	}
+	else
+	{
+		trap_SendServerCommand(ent - g_entities, "print \"^3Failed to log in: Invalid argument count!\n\"");
+		return;
+	}
+}
+//[videoP - smU - Serverside - All - Amlogin Function - End]
+
+//[videoP - smU - Serverside - All - Movement Function - Start]
+int RaceNameToInteger(char *style);
+static void Cmd_MovementStyle_f(gentity_t *ent)
+{
+	char mStyle[32];
+	int style;
+
+	if (!ent->client)
+		return;
+
+	if (trap_Argc() != 2) {
+		trap_SendServerCommand(ent - g_entities, "print \"Usage: /move <saga, jko, qw, cpm, q3, pjk, wsw, rjq3, or rjcpm>.\n\"");
+		return;
+	}
+
+	if (!g_raceMode.integer) {
+		trap_SendServerCommand(ent - g_entities, "print \"This command is not allowed in this gamemode!\n\"");
+		return;
+	}
+
+	/*
+	if (level.gametype != GT_FFA) {
+	trap->SendServerCommand(ent-g_entities, "print \"This command is not allowed in this gametype!\n\"");
+	return;
+	}
+	*/
+
+	if (!ent->client->sess.raceMode) {
+		trap_SendServerCommand(ent - g_entities, "print \"You must be in racemode to use this command!\n\"");
+		return;
+	}
+
+	if (VectorLength(ent->client->ps.velocity)) {
+		trap_SendServerCommand(ent - g_entities, "print \"You must be standing still to use this command!\n\"");
+		return;
+	}
+
+	trap_Argv(1, mStyle, sizeof(mStyle));
+
+	style = RaceNameToInteger(mStyle);
+
+	if (style >= 0 && style <= 8) {
+		ent->client->sess.movementStyle = style;
+		AmTeleportPlayer(ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue); //Good
+
+		if (style == 7 || style == 8) {
+			ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_SABER) + (1 << WP_ROCKET_LAUNCHER);
+		}
+		else {
+			ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_SABER) + (1 << WP_DISRUPTOR);
+			ent->client->ps.ammo[AMMO_ROCKETS] = 0;
+		}
+
+		if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
+			trap_SendServerCommand(ent - g_entities, "print \"Movement style updated: timer reset.\n\"");
+			ResetPlayerTimers(ent, qtrue);
+		}
+		else
+			trap_SendServerCommand(ent - g_entities, "print \"Movement style updated.\n\"");
+	}
+	else
+		trap_SendServerCommand(ent - g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, or jetpack>.\n\"");
+}
+
+static void Cmd_JumpChange_f(gentity_t *ent)
+{
+	char jLevel[32];
+	int level;
+
+	if (!ent->client)
+		return;
+
+	if (!ent->client->sess.raceMode) {
+		trap_SendServerCommand(ent - g_entities, "print \"You must be in racemode to use this command!\n\"");
+		return;
+	}
+
+	if (trap_Argc() != 2) {
+		trap_SendServerCommand(ent - g_entities, "print \"Usage: /jump <level>\n\"");
+		return;
+	}
+
+	if (VectorLength(ent->client->ps.velocity)) {
+		trap_SendServerCommand(ent - g_entities, "print \"You must be standing still to use this command!\n\"");
+		return;
+	}
+
+	trap_Argv(1, jLevel, sizeof(jLevel));
+	level = atoi(jLevel);
+
+	if (level > 0 && level < 4) {
+		ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = level;
+		AmTeleportPlayer(ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue); //Good
+		if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
+			trap_SendServerCommand(ent - g_entities, va("print \"Jumplevel updated (%i): timer reset.\n\"", level));
+			ResetPlayerTimers(ent, qtrue);
+		}
+		else
+			trap_SendServerCommand(ent - g_entities, va("print \"Jumplevel updated (%i).\n\"", level));
+	}
+	else
+		trap_SendServerCommand(ent - g_entities, "print \"Usage: /jump <level>\n\"");
+}
+//[videoP - smU - Serverside - All - Movement & Jump Command Functions - End]
+
+//[videoP - smU - Serverside - All - RaceTele Function - Start]
+void Cmd_RaceTele_f(gentity_t *ent)
+{
+	if (trap_Argc() > 2 && trap_Argc() != 4)
+		trap_SendServerCommand(ent - g_entities, "print \"Usage: /amTele to teleport to your telemark or /amTele <client> or /amtele <X Y Z>\n\"");
+	if (trap_Argc() == 1) {//Amtele to telemark
+		if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0) {
+			vec3_t	angles = { 0, 0, 0 };
+			angles[YAW] = ent->client->pers.telemarkAngle;
+			angles[PITCH] = ent->client->pers.telemarkPitchAngle;
+			AmTeleportPlayer(ent, ent->client->pers.telemarkOrigin, angles, qtrue, qtrue);
+		}
+		else
+			trap_SendServerCommand(ent - g_entities, "print \"No telemark set!\n\"");
+	}
+
+	if (trap_Argc() == 2)//Amtele to player
+	{
+		char client[MAX_NETNAME];
+		int clientid = -1;
+		vec3_t	angles = { 0, 0, 0 }, origin;
+
+		trap_Argv(1, client, sizeof(client));
+		clientid = JP_ClientNumberFromString(ent, client);
+
+		if (clientid == -1 || clientid == -2)
+			return;
+
+		origin[0] = g_entities[clientid].client->ps.origin[0];
+		origin[1] = g_entities[clientid].client->ps.origin[1];
+		origin[2] = g_entities[clientid].client->ps.origin[2] + 96;
+
+		AmTeleportPlayer(ent, origin, angles, qtrue, qtrue);
+	}
+
+	if (trap_Argc() == 4)
+	{
+		char x[32], y[32], z[32];
+		vec3_t angles = { 0, 0, 0 }, origin;
+
+		trap_Argv(1, x, sizeof(x));
+		trap_Argv(2, y, sizeof(y));
+		trap_Argv(3, z, sizeof(z));
+
+		origin[0] = atoi(x);
+		origin[1] = atoi(y);
+		origin[2] = atoi(z);
+
+		AmTeleportPlayer(ent, origin, angles, qtrue, qtrue);
+	}
+}
+//[videoP - smU - Serverside - All - RaceTele Function - End]
+
+//[videoP - smU - Serverside - All - Amtele Function - Start]
+/*
+=================
+Cmd_Amtele_f
+=================
+*/
+void Cmd_Amtele_f(gentity_t *ent)
+{
+	gentity_t	*teleporter;
+	char client1[MAX_NETNAME], client2[MAX_NETNAME];
+	char x[32], y[32], z[32], yaw[32];
+	int clientid1 = -1, clientid2 = -1;
+	vec3_t	angles = { 0, 0, 0 }, origin;
+	qboolean droptofloor = qfalse, race = qfalse;
+
+	if (!ent->client)
+		return;
+
+	if (ent->client->sess.fullAdmin)
+	{
+		if (!(g_fullAdminLevel.integer & (1 << A_ADMINTELE)))
+		{
+			if (ent->client->sess.raceMode && g_allowRaceTele.integer)
+				Cmd_RaceTele_f(ent);
+			else if (g_raceMode.integer && g_allowRaceTele.integer)
+				trap_SendServerCommand(ent - g_entities, "print \"You are not authorized to use this command (amTele) outside of racemode.\n\"");
+			else
+				trap_SendServerCommand(ent - g_entities, "print \"You are not authorized to use this command (amTele).\n\"");
+			return;
+		}
+	}
+	else if (ent->client->sess.juniorAdmin)
+	{
+		if (!(g_juniorAdminLevel.integer & (1 << A_ADMINTELE)))
+		{
+			if (ent->client->sess.raceMode && g_allowRaceTele.integer)
+				Cmd_RaceTele_f(ent);
+			else if (g_raceMode.integer && g_allowRaceTele.integer)
+				trap_SendServerCommand(ent - g_entities, "print \"You are not authorized to use this command (amTele) outside of racemode.\n\"");
+			else
+				trap_SendServerCommand(ent - g_entities, "print \"You are not authorized to use this command (amTele).\n\"");
+			return;
+		}
+	}
+	else//not logged in
+	{
+		if (ent->client->sess.raceMode && g_allowRaceTele.integer)
+			Cmd_RaceTele_f(ent);
+		else if (g_raceMode.integer && g_allowRaceTele.integer)
+			trap_SendServerCommand(ent - g_entities, "print \"You are not authorized to use this command (amTele) outside of racemode.\n\"");
+		else
+			trap_SendServerCommand(ent - g_entities, "print \"You are not authorized to use this command (amTele).\n\"");
+		return;
+	}
+
+	if (ent->client->sess.raceMode) {
+		droptofloor = qtrue;
+		race = qtrue;
+	}
+
+	if (trap_Argc() > 6)
+	{
+		trap_SendServerCommand(ent - g_entities, "print \"Usage: /amTele or /amTele <client> or /amTele <client> <client> or /amTele <X> <Y> <Z> <YAW> or /amTele <player> <X> <Y> <Z> <YAW>.\n\"");
+		return;
+	}
+
+	if (trap_Argc() == 1)//Amtele to telemark
+	{
+		if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0)
+		{
+			angles[YAW] = ent->client->pers.telemarkAngle;
+			angles[PITCH] = ent->client->pers.telemarkPitchAngle;
+			AmTeleportPlayer(ent, ent->client->pers.telemarkOrigin, angles, droptofloor, race);
+		}
+		else
+			trap_SendServerCommand(ent - g_entities, "print \"No telemark set!\n\"");
+		return;
+	}
+
+	if (trap_Argc() == 2)//Amtele to player
+	{
+		trap_Argv(1, client1, sizeof(client1));
+		clientid1 = JP_ClientNumberFromString(ent, client1);
+
+		if (clientid1 == -1 || clientid1 == -2)
+			return;
+
+		origin[0] = g_entities[clientid1].client->ps.origin[0];
+		origin[1] = g_entities[clientid1].client->ps.origin[1];
+		origin[2] = g_entities[clientid1].client->ps.origin[2] + 96;
+		AmTeleportPlayer(ent, origin, angles, droptofloor, race);
+		return;
+	}
+
+	if (trap_Argc() == 3)//Amtele player to player
+	{
+		trap_Argv(1, client1, sizeof(client1));
+		trap_Argv(2, client2, sizeof(client2));
+		clientid1 = JP_ClientNumberFromString(ent, client1);
+		clientid2 = JP_ClientNumberFromString(ent, client2);
+
+		if (clientid1 == -1 || clientid1 == -2 || clientid2 == -1 || clientid2 == -2)
+			return;
+
+		if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid1].client->sess.juniorAdmin))//He has admin
+		{
+			if (g_entities[clientid1].client->ps.clientNum != ent->client->ps.clientNum)//Hes not me
+			{
+				trap_SendServerCommand(ent - g_entities, "print \"You are not authorized to use this command on this player (amTele).\n\"");
+				return;
+			}
+		}
+
+		teleporter = &g_entities[clientid1];
+
+		origin[0] = g_entities[clientid2].client->ps.origin[0];
+		origin[1] = g_entities[clientid2].client->ps.origin[1];
+		origin[2] = g_entities[clientid2].client->ps.origin[2] + 96;
+
+		AmTeleportPlayer(teleporter, origin, angles, droptofloor, qfalse);
+		return;
+	}
+
+	if (trap_Argc() == 4)//|| trap->Argc() == 5)//Amtele to origin (if no angle specified, default 0?)
+	{
+		trap_Argv(1, x, sizeof(x));
+		trap_Argv(2, y, sizeof(y));
+		trap_Argv(3, z, sizeof(z));
+
+		origin[0] = atoi(x);
+		origin[1] = atoi(y);
+		origin[2] = atoi(z);
+
+		/*if (trap->Argc() == 5)
+		{
+		trap->Argv(4, yaw, sizeof(yaw));
+		angles[YAW] = atoi(yaw);
+		}*/
+
+		AmTeleportPlayer(ent, origin, angles, droptofloor, race);
+		return;
+	}
+
+	if (trap_Argc() == 5)//Amtele to angles + origin, OR Amtele player to origin
+	{
+		trap_Argv(1, client1, sizeof(client1));
+		clientid1 = JP_ClientNumberFromString(ent, client1);
+
+		if (clientid1 == -1 || clientid1 == -2)//Amtele to origin + angles
+		{
+			trap_Argv(1, x, sizeof(x));
+			trap_Argv(2, y, sizeof(y));
+			trap_Argv(3, z, sizeof(z));
+
+			origin[0] = atoi(x);
+			origin[1] = atoi(y);
+			origin[2] = atoi(z);
+
+			trap_Argv(4, yaw, sizeof(yaw));
+			angles[YAW] = atoi(yaw);
+
+			AmTeleportPlayer(ent, origin, angles, droptofloor, race);
+		}
+		else//Amtele other player to origin
+		{
+			if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid1].client->sess.juniorAdmin))//He has admin
+			{
+				if (g_entities[clientid1].client->ps.clientNum != ent->client->ps.clientNum)//Hes not me
+				{
+					trap_SendServerCommand(ent - g_entities, "print \"You are not authorized to use this command on this player (amTele).\n\"");
+					return;
+				}
+			}
+
+			teleporter = &g_entities[clientid1];
+
+			trap_Argv(2, x, sizeof(x));
+			trap_Argv(3, y, sizeof(y));
+			trap_Argv(4, z, sizeof(z));
+
+			origin[0] = atoi(x);
+			origin[1] = atoi(y);
+			origin[2] = atoi(z);
+
+			AmTeleportPlayer(teleporter, origin, angles, droptofloor, qfalse);
+		}
+		return;
+	}
+
+	if (trap_Argc() == 6)//Amtele player to angles + origin
+	{
+		trap_Argv(1, client1, sizeof(client1));
+		clientid1 = JP_ClientNumberFromString(ent, client1);
+
+		if (clientid1 == -1 || clientid1 == -2)
+			return;
+
+		if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid1].client->sess.juniorAdmin))//He has admin
+		{
+			if (g_entities[clientid1].client->ps.clientNum != ent->client->ps.clientNum)//Hes not me
+			{
+				trap_SendServerCommand(ent - g_entities, "print \"You are not authorized to use this command on this player (amTele).\n\"");
+				return;
+			}
+		}
+
+		teleporter = &g_entities[clientid1];
+
+		trap_Argv(2, x, sizeof(x));
+		trap_Argv(3, y, sizeof(y));
+		trap_Argv(4, z, sizeof(z));
+
+		origin[0] = atoi(x);
+		origin[1] = atoi(y);
+		origin[2] = atoi(z);
+
+		trap_Argv(5, yaw, sizeof(yaw));
+		angles[YAW] = atoi(yaw);
+
+		AmTeleportPlayer(teleporter, origin, angles, droptofloor, qfalse);
+		return;
+	}
+
+}
+//[videoP - smU - Serverside - All - Amtele Function - End]
+
+//[videoP - smU - Serverside - All - Amtelemark Function - Start]
+/*
+=================
+Cmd_Amtelemark_f
+=================
+*/
+void Cmd_Amtelemark_f(gentity_t *ent)
+{
+	if (!ent->client)
+		return;
+
+	if (ent->client && ent->client->ps.duelInProgress && ent->client->pers.lastUserName[0]) {
+		gentity_t *duelAgainst = &g_entities[ent->client->ps.duelIndex];
+		if (duelAgainst->client && duelAgainst->client->pers.lastUserName[0]) {
+			trap_SendServerCommand(ent - g_entities, va("print \"You are not authorized to use this command (amtele) in ranked duels.\n\""));
+			return; //Dont allow amtele in ranked duels ever..
+		}
+	}
+
+	if (ent->client->sess.fullAdmin) {//Logged in as full admin
+		if (!(g_fullAdminLevel.integer & (1 << A_TELEMARK))) {
+			if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
+				trap_SendServerCommand(ent - g_entities, "print \"You are not authorized to use this command (amTelemark) outside of racemode.\n\"");
+				return;
+			}
+			else if (ent->client->sess.raceMode && !g_allowRaceTele.integer) {
+				trap_SendServerCommand(ent - g_entities, "print \"You are not authorized to use this command (amTelemark).\n\"");
+				return;
+			}
+		}
+	}
+	else if (ent->client->sess.juniorAdmin) {//Logged in as junior admin
+		if (!(g_juniorAdminLevel.integer & (1 << A_TELEMARK))) {
+			if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
+				trap_SendServerCommand(ent - g_entities, "print \"You are not authorized to use this command (amTelemark) outside of racemode.\n\"");
+				return;
+			}
+			else if (ent->client->sess.raceMode && !g_allowRaceTele.integer) {
+				trap_SendServerCommand(ent - g_entities, "print \"You are not authorized to use this command (amTelemark).\n\"");
+				return;
+			}
+		}
+	}
+	else {//Not logged in
+		if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
+			trap_SendServerCommand(ent - g_entities, "print \"You are not authorized to use this command (amTelemark) outside of racemode.\n\"");
+			return;
+		}
+		else if (!g_allowRaceTele.integer || !g_raceMode.integer) {
+			trap_SendServerCommand(ent - g_entities, "print \"You must be logged in to use this command (amTelemark).\n\"");
+			return;
+		}
+	}
+
+	VectorCopy(ent->client->ps.origin, ent->client->pers.telemarkOrigin);
+	if (ent->client->sess.sessionTeam == TEAM_SPECTATOR && (ent->client->ps.pm_flags & PMF_FOLLOW))
+		ent->client->pers.telemarkOrigin[2] += 58;
+	ent->client->pers.telemarkAngle = ent->client->ps.viewangles[YAW];
+	ent->client->pers.telemarkPitchAngle = ent->client->ps.viewangles[PITCH];
+	trap_SendServerCommand(ent - g_entities, va("print \"Teleport Marker: ^3<%i, %i, %i> %i, %i\n\"",
+		(int)ent->client->pers.telemarkOrigin[0], (int)ent->client->pers.telemarkOrigin[1], (int)ent->client->pers.telemarkOrigin[2], (int)ent->client->pers.telemarkAngle, (int)ent->client->pers.telemarkPitchAngle));
+}
+//[videoP - smU - Serverside - All - Amtelemark Function - End]
+
+//[videoP - smU - Serverside - All - Race Function - Start]
+/*
+=================
+Cmd_Race_f
+=================
+*/
+void Cmd_Race_f(gentity_t *ent)
+{
+	if (!ent->client)
+		return;
+
+	if (ent->client->ps.powerups[PW_NEUTRALFLAG] || ent->client->ps.powerups[PW_REDFLAG] || ent->client->ps.powerups[PW_BLUEFLAG])
+		return;
+
+	if (g_raceMode.integer < 2) {
+		trap_SendServerCommand(ent - g_entities, "print \"^5This command is not allowed!\n\"");
+		ent->client->sess.raceMode = qfalse;
+		return;
+	}
+
+	if (g_gametype.integer != GT_FFA) {
+		trap_SendServerCommand(ent - g_entities, "print \"^5This command is not allowed in this gametype!\n\"");
+		ent->client->sess.raceMode = qfalse;
+		return;
+	}
+
+	if (ent->client->sess.raceMode) {//Toggle it
+		ent->client->sess.raceMode = qfalse;
+		ent->client->pers.noFollow = qfalse;
+		ent->client->pers.practice = qfalse;
+		ent->r.svFlags &= ~SVF_SINGLECLIENT; //ehh?
+		ent->s.weapon = WP_SABER; //Don't drop our weapon
+		Cmd_ForceChanged_f(ent);//Make sure their jump level is valid.. if leaving racemode :S
+		trap_SendServerCommand(ent - g_entities, "print \"^5Race mode toggled off.\n\"");
+	}
+	else {
+		ent->client->sess.raceMode = qtrue;
+		trap_SendServerCommand(ent - g_entities, "print \"^5Race mode toggled on.\n\"");
+	}
+
+	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR) {
+		G_Kill(ent); //stop aboooose!
+		ent->client->ps.persistant[PERS_SCORE] = 0;
+		ent->client->ps.persistant[PERS_KILLED] = 0;
+		ent->client->pers.enterTime = level.time; //reset scoreboard kills/deaths i guess... and time?
+	}
+	return;
+}
+
+/*
+=================
+Cmd_Amlogout_f
+=================
+*/
+void Cmd_Amlogout_f(gentity_t *ent)
+{
+	if (!ent->client)
+		return;
+	if (ent->client->sess.fullAdmin || ent->client->sess.juniorAdmin)
+	{
+		ent->client->sess.fullAdmin = qfalse;
+		ent->client->sess.juniorAdmin = qfalse;
+		trap_SendServerCommand(ent - g_entities, "print \"You are no longer an admin.\n\"");
+	}
+	else
+		return;
+}
+//[smU - Serverside - All - Amlogout Function - End]
+
 /*
 =================
 ClientCommand

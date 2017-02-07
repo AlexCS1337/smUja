@@ -139,7 +139,61 @@ extern void *g2SaberInstance;
 extern qboolean gEscaping;
 extern int gEscapeTime;
 
+//================================
 extern int dueltypes[MAX_CLIENTS];//smU/JAPRO - Serverside - Fullforce Duels y is this extern
+
+
+typedef enum {
+	A_ADMINTELE,
+	//A_FREEZE,
+	A_TELEMARK,
+	//A_ADMINBAN,
+	//A_ADMINKICK,
+	A_NOCLIP,
+	//A_GRANTADMIN,
+	//A_CHANGEMAP,
+	//A_CSPRINT,
+	//A_FORCETEAM,
+	//A_LOCKTEAM,
+	//A_VSTR,
+	//A_SEEIP,
+	//A_RENAME,
+	A_LISTMAPS,
+	//A_BUILDHIGHSCORES,
+	//A_WHOIS,
+	//A_LOOKUP,
+	//A_NOFOLLOW,
+	//A_SEEHIDDEN,
+	A_CALLVOTE,
+	A_KILLVOTE
+} admin_type_t;
+
+
+//smU - Serverside - Emote bitrates
+/*typedef enum {
+	E_BEG,
+	E_BEG2,
+	E_BREAKDANCE,
+	E_CHEER,
+	E_COWER,
+	E_DANCE,
+	E_HUG,
+	E_NOISY,
+	E_POINT,
+	E_RAGE,
+	E_SIT,
+	E_SURRENDER,
+	E_SMACK,
+	E_TAUNT,
+	E_VICTORY,
+	E_JAWARUN,
+	E_BERNIE,
+	E_SLEEP,
+	E_SABERFLIP,
+	E_SLAP,
+	E_SIGNAL, //Group them all here, running out of space in this :s
+	E_ALL
+} emote_type_t;*/
 
 
 //[smU - Serverside - All - Jcinfo bitvalues
@@ -500,11 +554,11 @@ typedef struct {
 	unsigned int	ignore; // contains bits of all clients to be ignored, 0 - no one ignored, 0xFFFFFFFF - ignore all
 	qboolean	sawMOTD; //smU, has the client been shown the MOTD?
 
-	//boolean	raceMode;
-	//int			movementStyle;
+	qboolean	raceMode;
+	int			movementStyle;
 
-	//qboolean	juniorAdmin;
-	//qboolean	fullAdmin;
+	qboolean	juniorAdmin;
+	qboolean	fullAdmin;
 } clientSession_t;
 
 // playerstate mGameFlags
@@ -536,7 +590,7 @@ typedef struct {
 	int			connectTime;
 
 	qboolean	isJAPRO;//JAPRO - Serverside - Add Clientside Version
-	/*qboolean	issmU;//smU - Serverside - Add Clientside Version
+	//qboolean	issmU;//smU - Serverside - Add Clientside Version
 	qboolean	JAWARUN;//JAPRO - Serverside - Add Clientside Version
 	qboolean	centerMuzzle;//JAPRO - Serverside - Check if client wants to center muzzlepoint.
 	qboolean	noDamageNumbers;//Japro
@@ -590,7 +644,7 @@ typedef struct {
 	qboolean	showCenterCP;
 	int			stopRecordingTime;
 	char		oldDemoName[16];
-	char		demoName[MAX_QPATH];*/
+	char		demoName[MAX_QPATH];
 
 } clientPersistant_t;
 

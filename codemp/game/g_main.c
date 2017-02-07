@@ -222,11 +222,13 @@ vmCvar_t	g_allowSabergun;
 
 // smU - Movement
 vmCvar_t	g_flipKick;
+vmCvar_t	g_movementStyle;
 
 // smU - Dueling
 vmCvar_t	g_duelStartHealth;
 vmCvar_t	g_duelStartArmor;
 vmCvar_t	g_duelDistanceLimit;
+vmCvar_t	g_allowGunDuel;
 
 // smU - Other
 vmCvar_t	g_allowBlackNames;
@@ -235,6 +237,20 @@ vmCvar_t	g_consoleMOTD;
 vmCvar_t	g_centerMOTDTime;
 vmCvar_t	g_centerMOTD;
 vmCvar_t	g_playerLog;
+
+//smU ADMIN
+vmCvar_t	g_juniorAdminLevel;
+vmCvar_t	g_fullAdminLevel;
+vmCvar_t	g_juniorAdminPass;
+vmCvar_t	g_fullAdminPass;
+vmCvar_t	g_juniorAdminMsg;
+vmCvar_t	g_fullAdminMsg;
+vmCvar_t	g_allowNoFollow;
+
+//smURACE / ACCOUNTS
+vmCvar_t	g_raceMode;
+vmCvar_t	g_allowRaceTele;
+vmCvar_t	g_forceLogin;
 
 // nmckenzie: temporary way to show player healths in duels - some iface gfx in game would be better, of course.
 // DUEL_HEALTH
@@ -488,11 +504,13 @@ static cvarTable_t		gameCvarTable[] = {
 
 // smU - Movement
 	{ &g_flipKick, "g_flipKick", "0", CVAR_ARCHIVE, 0, qtrue},
+	{ &g_movementStyle, "g_movementStyle", "1", CVAR_ARCHIVE, 0, qtrue },
 
 // smU - Dueling
 	{ &g_duelStartHealth, "g_duelStartHealth", "0", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_duelStartArmor, "g_duelStartArmor", "0", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_duelDistanceLimit, "g_duelDistanceLimit", "0", CVAR_ARCHIVE, 0, qtrue },
+	{ &g_allowGunDuel, "g_allowGunDuel", "1", CVAR_ARCHIVE, 0, qtrue },
 
 // smU - Other
 	{ &g_allowBlackNames, "g_allowBlackNames", "0", CVAR_ARCHIVE, 0, qtrue},
@@ -500,7 +518,22 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_consoleMOTD, "g_consoleMOTD", "", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_centerMOTDTime, "g_centerMOTDTime", "5", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_centerMOTD, "g_centerMOTD", "", CVAR_ARCHIVE, 0, qfalse },
-	{ &g_playerLog, "g_playerLog", "0", CVAR_ARCHIVE, 0, qtrue }
+	{ &g_playerLog, "g_playerLog", "0", CVAR_ARCHIVE, 0, qtrue },
+
+		//jk2PRO ADMIN
+	{ &g_juniorAdminLevel, "g_juniorAdminLevel", "0", CVAR_ARCHIVE, 0, qfalse },
+	{ &g_fullAdminLevel, "g_fullAdminLevel", "0", CVAR_ARCHIVE, 0, qfalse },
+	{ &g_juniorAdminPass, "g_juniorAdminPass", "", CVAR_ARCHIVE, 0, qfalse },
+	{ &g_fullAdminPass, "g_fullAdminPass", "", CVAR_ARCHIVE, 0, qfalse },
+	{ &g_juniorAdminMsg, "g_juniorAdminMsg", "", CVAR_ARCHIVE, 0, qfalse },
+	{ &g_fullAdminMsg, "g_fullAdminMsg", "", CVAR_ARCHIVE, 0, qfalse },
+	{ &g_allowNoFollow, "g_allowNoFollow", "0", CVAR_ARCHIVE, 0, qtrue },
+
+		//jk2PRO RACE / ACCOUNTS
+	{ &g_raceMode, "g_raceMode", "0", CVAR_ARCHIVE, 0, qtrue },
+	{ &g_allowRaceTele, "g_allowRaceTele", "0", CVAR_ARCHIVE, 0, qtrue },
+	{ &g_forceLogin, "g_forceLogin", "0", CVAR_ARCHIVE, 0, qfalse }
+
 };
 
 // bk001129 - made static to avoid aliasing
