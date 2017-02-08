@@ -2948,7 +2948,9 @@ qboolean G_OtherPlayersDueling(void)
 	return qfalse;
 }
 
-void Cmd_ForceDuel_f(gentity_t *ent) {
+//smU - Serverside - Fullforce Duels - Start
+void Cmd_ForceDuel_f(gentity_t *ent)
+{
 	Cmd_EngageDuel_f(ent, 1);
 }
 
@@ -2971,6 +2973,8 @@ void Cmd_GunDuel_f(gentity_t *ent)
 	if (trap_Argc() == 1)//Use current weapon
 	{
 		weap = ent->s.weapon;
+		//if (weap == 17)//fuck off
+		//weap = WP_NONE;
 		if (weap > LAST_USEABLE_WEAPON) //last usable is 16
 			weap = WP_NONE;
 	}
@@ -2984,10 +2988,14 @@ void Cmd_GunDuel_f(gentity_t *ent)
 			i++;
 		}
 
-		if (!Q_stricmp("stun", weapStr) || !Q_stricmp("stunbaton", weapStr))
-			weap = WP_STUN_BATON; //+ 14; //16 //17
-		else if (!Q_stricmp("pistol", weapStr) || !Q_stricmp("bryar", weapStr))
+		if (!Q_stricmp("melee", weapStr) || !Q_stricmp("fists", weapStr) || !Q_stricmp("fisticuffs", weapStr))
+			weap = WP_MELEE;
+		else if (!Q_stricmp("stun", weapStr) || !Q_stricmp("stunbaton", weapStr))
+			weap = WP_STUN_BATON + 16;//17
+		else if (!Q_stricmp("pistol", weapStr) || !Q_stricmp("dl44", weapStr))
 			weap = WP_BRYAR_PISTOL;
+		else if (!Q_stricmp("bryar", weapStr) || !Q_stricmp("bryarpistol", weapStr))
+			weap = WP_BRYAR_OLD;
 		else if (!Q_stricmp("blaster", weapStr) || !Q_stricmp("e11", weapStr))
 			weap = WP_BLASTER;
 		else if (!Q_stricmp("sniper", weapStr) || !Q_stricmp("disruptor", weapStr))
@@ -3000,6 +3008,8 @@ void Cmd_GunDuel_f(gentity_t *ent)
 			weap = WP_DEMP2;
 		else if (!Q_stricmp("flechette", weapStr) || !Q_stricmp("shotgun", weapStr))
 			weap = WP_FLECHETTE;
+		else if (!Q_stricmp("concussion", weapStr) || !Q_stricmp("conc", weapStr))
+			weap = WP_CONCUSSION;
 		else if (!Q_stricmp("rocket", weapStr) || !Q_stricmp("rockets", weapStr) || !Q_stricmp("rocketlauncher", weapStr))
 			weap = WP_ROCKET_LAUNCHER;
 		else if (!Q_stricmp("detpack", weapStr) || !Q_stricmp("detpacks", weapStr))
@@ -3009,41 +3019,33 @@ void Cmd_GunDuel_f(gentity_t *ent)
 		else if (!Q_stricmp("tripmine", weapStr) || !Q_stricmp("trip", weapStr) || !Q_stricmp("trips", weapStr))
 			weap = WP_TRIP_MINE;
 		else if (!Q_stricmp("all", weapStr))
-			weap = LAST_USEABLE_WEAPON + 3; //16
+			weap = LAST_USEABLE_WEAPON + 2; //18
 
 	}
 
-	if (weap == WP_NONE || weap == WP_SABER || (weap > (LAST_USEABLE_WEAPON + 3))) {
+	if (weap == WP_NONE || weap == WP_SABER || (weap > (LAST_USEABLE_WEAPON + 2))) {
 		//trap_SendServerCommand( ent-g_entities, "print \"Invalid weapon specified, using default case: Bryar\n\"" );
 		weap = WP_BRYAR_PISTOL;//pff
 	}
 
-	Cmd_EngageDuel_f(ent, weap + 1);//Fuck it right here
+	Cmd_EngageDuel_f(ent, weap + 2);//Fuck it right here
 }
 
-void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)
+void Weapon_HookFree(gentity_t *ent);
+void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullforce Duels
 {
 	trace_t tr;
 	vec3_t forward, fwdOrg;
 
-	//Private duel cvar on? Check this first
 	if (!g_privateDuel.integer)
 		return;
 
-
-	if (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL)
+	if (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL || g_gametype.integer >= GT_TEAM)
 	{ //rather pointless in this mode..
 		if (dueltype == 0 || dueltype == 1)
-			trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", G_GetStripEdString("SVINGAME", "NODUEL_GAMETYPE")));
+			trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NODUEL_GAMETYPE")));
 		else
 			trap_SendServerCommand(ent - g_entities, "print \"This gametype does not support gun dueling.\n\"");
-		return;
-	}
-
-	//if (g_gametype.integer >= GT_TEAM && g_gametype.integer != GT_SIEGE)
-	if (g_gametype.integer >= GT_TEAM)
-	{ //no private dueling in team modes
-		trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NODUEL_GAMETYPE")));
 		return;
 	}
 
@@ -3053,18 +3055,19 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)
 	if ((dueltype == 0 || dueltype == 1) && ent->client->ps.weapon != WP_SABER)
 		return;
 
-	/*
-	if (!ent->client->ps.saberHolstered)
-	{ //must have saber holstered at the start of the duel
-	return;
-	}
-	*/
-	//NOTE: No longer doing this..
+	if ((dueltype == 0 || dueltype == 1) && (ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)))//JAPRO - Disallow jetpack in NF,FF duels?
+		return;
 
 	if (ent->client->ps.saberInFlight)
 		return;
 
-	if (ent->client->sess.sessionTeam == TEAM_SPECTATOR)
+	if (ent->client->sess.sessionTeam == TEAM_SPECTATOR) // Does this stop spectating someone and challenging them to a duel?
+		return;
+
+	if (ent->client->ps.forceHandExtend == HANDEXTEND_KNOCKDOWN)
+		return;
+
+	if (ent->client->ps.powerups[PW_NEUTRALFLAG])
 		return;
 
 	if (ent->client->ps.duelInProgress)
@@ -3073,17 +3076,10 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)
 	if (ent->client->sess.raceMode)
 		return;
 
-	/*//New: Don't let a player duel if he just did and hasn't waited 10 seconds yet (note: If someone challenges him, his duel timer will reset so he can accept)
-	if (ent->client->ps.fd.privateDuelTime > level.time)
-	{
-	trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStripEdString("SVINGAME", "CANTDUEL_JUSTDID")) );
-	return;
-	}
-	if (G_OtherPlayersDueling())
-	{
-	trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStripEdString("SVINGAME", "CANTDUEL_BUSY")) );
-	return;
-	}*/
+#if _GRAPPLE
+	if (ent->client && ent->client->hook)
+		Weapon_HookFree(ent->client->hook);
+#endif
 
 	AngleVectors(ent->client->ps.viewangles, forward, NULL, NULL);
 
@@ -3106,12 +3102,14 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)
 		}
 
 		if (g_gametype.integer >= GT_TEAM && OnSameTeam(ent, challenged))
+		{
 			return;
+		}
 
 		ent->client->ps.forceHandExtend = HANDEXTEND_DUELCHALLENGE;
 		ent->client->ps.forceHandExtendTime = level.time + 1000; //Moved this up here
 
-																 //jk2PRO - Serverside - Fullforce Duels + Duel Messages - Start
+																 //JAPRO - Serverside - Fullforce Duels + Duel Messages - Start
 		if (challenged->client->ps.duelIndex == ent->s.number && (challenged->client->ps.duelTime + 2000) >= level.time &&
 			(
 			((dueltypes[challenged->client->ps.clientNum] == dueltype) && (dueltype == 0 || dueltype == 1))
@@ -3119,15 +3117,13 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)
 				(dueltypes[challenged->client->ps.clientNum] != 0 && (dueltypes[challenged->client->ps.clientNum] != 1) && dueltype > 1)
 				))
 		{
-			//trap_SendServerCommand( /*challenged-g_entities*/-1, va("print \"%s %s %s!\n\"", challenged->client->pers.netname, G_GetStripEdString("SVINGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
-
 			ent->client->ps.duelInProgress = qtrue;
 			challenged->client->ps.duelInProgress = qtrue;
 
 			if (dueltype == 0 || dueltype == 1)
-				dueltypes[ent->client->ps.clientNum] = dueltype;//why isn't this syncing the weapons they use? gun duels
+				dueltypes[ent->client->ps.clientNum] = dueltype;//y isnt this syncing the weapons they use? gun duels
 			else {
-				dueltypes[ent->client->ps.clientNum] = dueltypes[challenged->client->ps.clientNum];//dueltype;//okay this is why
+				dueltypes[ent->client->ps.clientNum] = dueltypes[challenged->client->ps.clientNum];//dueltype;//k this is y
 			}
 
 			ent->client->ps.duelTime = level.time + 2000; //loda fixme
@@ -3135,61 +3131,75 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)
 
 			switch (dueltype)
 			{
-			case 0:
+			case	0:
 				//Saber Duel
-				G_AddEvent(ent, EV_PRIVATE_DUEL, 0);
-				G_AddEvent(challenged, EV_PRIVATE_DUEL, 0);
-				trap_SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Saber)\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname));
-				break;
-			case 1://FF Duel
 				G_AddEvent(ent, EV_PRIVATE_DUEL, 1);
 				G_AddEvent(challenged, EV_PRIVATE_DUEL, 1);
-				//trap_SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Force)\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname));
+				if (ent->client->pers.userName[0] && challenged->client->pers.userName[0])
+					trap_SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Saber) [Ranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname));
+				else
+					trap_SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Saber) [Unranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname));
 				break;
-			default://Gun Duel
+			case	1://FF Duel
+				G_AddEvent(ent, EV_PRIVATE_DUEL, 2);
+				G_AddEvent(challenged, EV_PRIVATE_DUEL, 2);
+				if (ent->client->pers.userName[0] && challenged->client->pers.userName[0])
+					trap_SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Force) [Ranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname));
+				else
+					trap_SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Force) [Unranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname));
+				break;
+			default://Gun duel
 				G_AddEvent(ent, EV_PRIVATE_DUEL, dueltypes[ent->client->ps.clientNum]);
 				G_AddEvent(challenged, EV_PRIVATE_DUEL, dueltypes[challenged->client->ps.clientNum]);
-				trap_SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Gun)\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname));
+				if (ent->client->pers.userName[0] && challenged->client->pers.userName[0])
+					trap_SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Gun) [Ranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname));
+				else
+					trap_SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Gun) [Unranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname));
 				break;
 			}
 
-			//Old stuff, the switch above replaces this :)
-			//G_AddEvent(ent, EV_PRIVATE_DUEL, 1);
-			//G_AddEvent(challenged, EV_PRIVATE_DUEL, 1);
+			G_SetAnim(ent, &ent->client->pers.cmd, SETANIM_BOTH, BOTH_STAND1, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD, 0);
+			G_SetAnim(challenged, &ent->client->pers.cmd, BOTH_STAND1, BOTH_STAND1, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD, 0);
 
-			//Holster their sabers now, until the duel starts (then they'll get auto-turned on to look cool)
-
-			if (!ent->client->ps.saberHolstered)
+			if (ent->client->ps.saberHolstered < 2)
 			{
-				G_Sound(ent, CHAN_AUTO, saberOffSound);
+				if (ent->client->saber[0].soundOff) {
+					G_Sound(ent, CHAN_AUTO, ent->client->saber[0].soundOff);
+				}
+				if (ent->client->saber[1].soundOff && ent->client->saber[1].model[0]) {
+					G_Sound(ent, CHAN_AUTO, ent->client->saber[1].soundOff);
+				}
+				ent->client->ps.saberHolstered = 2;
 				ent->client->ps.weaponTime = 400;
-				ent->client->ps.saberHolstered = qtrue;
 			}
-			if (!challenged->client->ps.saberHolstered)
+			if (challenged->client->ps.saberHolstered < 2)
 			{
-				G_Sound(challenged, CHAN_AUTO, saberOffSound);
+				if (challenged->client->saber[0].soundOff)
+				{
+					G_Sound(challenged, CHAN_AUTO, challenged->client->saber[0].soundOff);
+				}
+				if (challenged->client->saber[1].soundOff && challenged->client->saber[1].model[0])
+				{
+					G_Sound(challenged, CHAN_AUTO, challenged->client->saber[1].soundOff);
+				}
+				challenged->client->ps.saberHolstered = 2;
 				challenged->client->ps.weaponTime = 400;
-				challenged->client->ps.saberHolstered = qtrue;
 			}
 			if (g_duelStartHealth.integer)
 			{
 				ent->health = ent->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer;
-				challenged->health = challenged->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer;
-			}
-			if (g_duelStartArmor.integer)
-			{
 				ent->client->ps.stats[STAT_ARMOR] = g_duelStartArmor.integer;
+				challenged->health = challenged->client->ps.stats[STAT_HEALTH] = g_duelStartHealth.integer;
 				challenged->client->ps.stats[STAT_ARMOR] = g_duelStartArmor.integer;
 			}
-
-			ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax;
-			challenged->client->ps.fd.forcePower = challenged->client->ps.fd.forcePowerMax;//Give them both max force power!
-
+			ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax; //max force power too!
+			challenged->client->ps.fd.forcePower = challenged->client->ps.fd.forcePowerMax; //max force power too!
 			ent->client->ps.fd.forceRageRecoveryTime = 0;
 			challenged->client->ps.fd.forceRageRecoveryTime = 0; //Get rid of rage recovery when duel starts!
-			if (dueltypes[challenged->client->ps.clientNum] > 1) { //2) { //1 ?
-				int weapon = dueltypes[challenged->client->ps.clientNum] - 1; // - 2;
-				if (weapon == LAST_USEABLE_WEAPON + 3) { //All weapons and ammo.
+
+			if (dueltypes[challenged->client->ps.clientNum] > 2) { //1 ?
+				int weapon = dueltypes[challenged->client->ps.clientNum] - 2;
+				if (weapon == LAST_USEABLE_WEAPON + 2) { //All weapons and ammo.
 					int i;
 					for (i = 1; i <= LAST_USEABLE_WEAPON; i++) {
 						ent->client->ps.stats[STAT_WEAPONS] |= (1 << i);
@@ -3203,7 +3213,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)
 					ent->client->ps.ammo[AMMO_TRIPMINE] = challenged->client->ps.ammo[AMMO_TRIPMINE] = 10;
 					ent->client->ps.ammo[AMMO_DETPACK] = challenged->client->ps.ammo[AMMO_DETPACK] = 10;
 				}
-				else if (weapon != WP_STUN_BATON) {
+				else if (weapon != WP_STUN_BATON && weapon != WP_MELEE && weapon != WP_BRYAR_PISTOL) {
 					ent->client->ps.ammo[weaponData[weapon].ammoIndex] = 999; //gun duel ammo
 					challenged->client->ps.ammo[weaponData[weapon].ammoIndex] = 999; //gun duel ammo
 				}
@@ -3224,48 +3234,50 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)
 			char weapStr[64];
 			//Print the message that a player has been challenged in private, only announce the actual duel initiation in private
 			switch (dueltype) {
-			case 0:
+			case	0:
 				trap_SendServerCommand(challenged - g_entities, va("cp \"%s ^7%s\n^2(Saber Duel)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE")));
 				trap_SendServerCommand(ent - g_entities, va("cp \"%s %s\n^2(Saber Duel)\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname));
 				break;
-			case 1:
+			case	1:
 				trap_SendServerCommand(challenged - g_entities, va("cp \"%s ^7%s\n^4(Force Duel)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE")));
 				trap_SendServerCommand(ent - g_entities, va("cp \"%s %s\n^4(Force Duel)\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname));
 				break;
 			default:
-				switch (dueltype - 1) {
+				switch (dueltype - 2) {
 				case 1:	Com_sprintf(weapStr, sizeof(weapStr), "Stun baton"); break;
-				case 3:	Com_sprintf(weapStr, sizeof(weapStr), "Bryar"); break;
-				case 4:	Com_sprintf(weapStr, sizeof(weapStr), "E11"); break;
-				case 5:	Com_sprintf(weapStr, sizeof(weapStr), "Sniper"); break;
-				case 6:	Com_sprintf(weapStr, sizeof(weapStr), "Bowcaster");	break;
-				case 7:	Com_sprintf(weapStr, sizeof(weapStr), "Repeater"); break;
-				case 8:	Com_sprintf(weapStr, sizeof(weapStr), "Demp2");	break;
-				case 9: Com_sprintf(weapStr, sizeof(weapStr), "Flechette"); break;
-				case 10: Com_sprintf(weapStr, sizeof(weapStr), "Rocket"); break;
-				case 11: Com_sprintf(weapStr, sizeof(weapStr), "Thermal"); break;
-				case 12: Com_sprintf(weapStr, sizeof(weapStr), "Tripmine"); break;
-				case 13: Com_sprintf(weapStr, sizeof(weapStr), "Detpack"); break;
+				case 2: Com_sprintf(weapStr, sizeof(weapStr), "Melee"); break;
+				case 4:	Com_sprintf(weapStr, sizeof(weapStr), "Pistol"); break;
+				case 5:	Com_sprintf(weapStr, sizeof(weapStr), "E11"); break;
+				case 6:	Com_sprintf(weapStr, sizeof(weapStr), "Sniper"); break;
+				case 7:	Com_sprintf(weapStr, sizeof(weapStr), "Bowcaster");	break;
+				case 8:	Com_sprintf(weapStr, sizeof(weapStr), "Repeater"); break;
+				case 9:	Com_sprintf(weapStr, sizeof(weapStr), "Demp2");	break;
+				case 10: Com_sprintf(weapStr, sizeof(weapStr), "Flechette"); break;
+				case 11: Com_sprintf(weapStr, sizeof(weapStr), "Rocket"); break;
+				case 12: Com_sprintf(weapStr, sizeof(weapStr), "Thermal"); break;
+				case 13: Com_sprintf(weapStr, sizeof(weapStr), "Tripmine"); break;
+				case 14: Com_sprintf(weapStr, sizeof(weapStr), "Detpack"); break;
+				case 15: Com_sprintf(weapStr, sizeof(weapStr), "Concussion rifle"); break;
+				case 16: Com_sprintf(weapStr, sizeof(weapStr), "Bryar"); break;
+				case 17: Com_sprintf(weapStr, sizeof(weapStr), "Stun baton"); break;
 				default: Com_sprintf(weapStr, sizeof(weapStr), "Gun"); break;
 				}
 				trap_SendServerCommand(challenged - g_entities, va("cp \"%s ^7%s\n^4(%s Duel)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE"), weapStr));
 				trap_SendServerCommand(ent - g_entities, va("cp \"%s %s\n^4(%s Duel)\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname, weapStr));
 				break;
 			}
-			//trap_SendServerCommand( challenged-g_entities, va("cp \"%s %s\n\"", ent->client->pers.netname, G_GetStripEdString("SVINGAME", "PLDUELCHALLENGE")) );
-			//trap_SendServerCommand( ent-g_entities, va("cp \"%s %s\n\"", G_GetStripEdString("SVINGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname) );
 		}
-		//jk2PRO - Serverside - Fullforce Duels + Duel Messages - End
+		//smU - Serverside - Fullforce Duels + Duel Messages - End
 
 		challenged->client->ps.fd.privateDuelTime = 0; //reset the timer in case this player just got out of a duel. He should still be able to accept the challenge.
 
 													   //ent->client->ps.forceHandExtend = HANDEXTEND_DUELCHALLENGE;
-													   //ent->client->ps.forceHandExtendTime = level.time + 1000;
+													   //ent->client->ps.forceHandExtendTime = level.time + 1000; //Hmm.. move this up above so it dosnt overwrite attack pause
 
 		ent->client->ps.duelIndex = challenged->s.number;
 		ent->client->ps.duelTime = level.time + 2000;//Is this where the freeze comes from?
 		if (dueltype == 0 || dueltype == 1)
-			dueltypes[ent->client->ps.clientNum] = dueltype;
+			dueltypes[ent->client->ps.clientNum] = dueltype;//JAPRO - Serverside - Fullforce Duels
 		else if (!ent->client->ps.duelInProgress)
 			dueltypes[ent->client->ps.clientNum] = dueltype;
 	}
@@ -4046,6 +4058,61 @@ void ClientCommand( int clientNum ) {
 
 
 	trap_Argv( 0, cmd, sizeof( cmd ) );
+
+	// smU client commands
+	if(Q_stricmp(cmd, "aminfo") == 0) {
+		Cmd_Aminfo_f(ent);
+		return;
+	}
+
+	if (Q_stricmp(cmd, "amlogin") == 0) {
+		Cmd_Amlogin_f(ent);
+		return;
+	}
+
+	if (Q_stricmp(cmd, "amlogout") == 0) {
+		Cmd_Amlogout_f(ent);
+		return;
+	}
+
+	if (Q_stricmp(cmd, "amtele") == 0) {
+		if (level.intermissiontime)
+		{
+			trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+			return;
+		}
+		Cmd_Amtele_f(ent);
+		return;
+	}
+
+	if (Q_stricmp(cmd, "amtelemark") == 0) {
+		if (level.intermissiontime)
+		{
+			trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+			return;
+		}
+		Cmd_Amtelemark_f(ent);
+		return;
+	}
+
+	if (Q_stricmp(cmd, "engage_fullforceduel") == 0) {
+		if (level.intermissiontime)
+			return;
+		Cmd_ForceDuel_f(ent);
+		return;
+	}
+
+	if (Q_stricmp(cmd, "engage_gunduel") == 0) {
+		if (level.intermissiontime)
+			return;
+		Cmd_GunDuel_f(ent);
+		return;
+	}
+
+	if (Q_stricmp(cmd, "race") == 0) {
+		Cmd_Race_f(ent);
+		return;
+	}
 
 	//rww - redirect bot commands
 	if (strstr(cmd, "bot_") && AcceptBotCommand(cmd, ent))
