@@ -3032,7 +3032,7 @@ void Cmd_GunDuel_f(gentity_t *ent)
 }
 
 void Weapon_HookFree(gentity_t *ent);
-void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullforce Duels
+void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//smU - Serverside - Fullforce Duels
 {
 	trace_t tr;
 	vec3_t forward, fwdOrg;
@@ -3109,7 +3109,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 		ent->client->ps.forceHandExtend = HANDEXTEND_DUELCHALLENGE;
 		ent->client->ps.forceHandExtendTime = level.time + 1000; //Moved this up here
 
-																 //JAPRO - Serverside - Fullforce Duels + Duel Messages - Start
+																 //smU- Serverside - Fullforce Duels + Duel Messages - Start
 		if (challenged->client->ps.duelIndex == ent->s.number && (challenged->client->ps.duelTime + 2000) >= level.time &&
 			(
 			((dueltypes[challenged->client->ps.clientNum] == dueltype) && (dueltype == 0 || dueltype == 1))
@@ -3452,7 +3452,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		return;
 
 	//Q_strncpyz(buf, va("^5 Hi there, %s^5.  This server is using the jk2PRO mod.\n", ent->client->pers.netname), sizeof(buf));
-	trap_SendServerCommand(ent->client->ps.clientNum, va("print \"^5 Hi there, %s^5.  This server is using the jk2PRO mod.\n\n\"", ent->client->pers.netname));
+	trap_SendServerCommand(ent->client->ps.clientNum, va("print \"^5 Hi there, %s^5.  This server is using the smU mod.\n\n\"", ent->client->pers.netname));
 	trap_SendServerCommand(ent->client->ps.clientNum, va("print \"^3Have you tried out Full Force Duel Mode yet? Use /engage_fullforceduel while looking at your opponent\n\""));
 	trap_SendServerCommand(ent->client->ps.clientNum, va("print \"^3to challenge them to a FF duel.  Also try out /engage_gunduel! You can even bind these commands!\n\""));
 	return;
