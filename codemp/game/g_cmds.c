@@ -3031,12 +3031,19 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)
 		return;
 
 
-	if (g_gametype.integer == g_gametype.integer >= GT_TEAM)//|| GT_TOURNAMENT)
+	if (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL)
 	{ //rather pointless in this mode..
 		if (dueltype == 0 || dueltype == 1)
 			trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", G_GetStripEdString("SVINGAME", "NODUEL_GAMETYPE")));
 		else
 			trap_SendServerCommand(ent - g_entities, "print \"This gametype does not support gun dueling.\n\"");
+		return;
+	}
+
+	//if (g_gametype.integer >= GT_TEAM && g_gametype.integer != GT_SIEGE)
+	if (g_gametype.integer >= GT_TEAM)
+	{ //no private dueling in team modes
+		trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NODUEL_GAMETYPE")));
 		return;
 	}
 
