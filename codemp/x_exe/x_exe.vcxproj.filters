@@ -2,64 +2,64 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{f3eb40e5-48f8-410d-b149-10b2add979b3}</UniqueIdentifier>
+      <UniqueIdentifier>{18d9fd5e-b2e0-495e-9991-875ce4d204bf}</UniqueIdentifier>
     </Filter>
     <Filter Include="Client">
-      <UniqueIdentifier>{14ce3a59-9e6b-49f9-8fb3-dfa1a3bdce9c}</UniqueIdentifier>
+      <UniqueIdentifier>{619ded6f-b170-4b81-b704-181d158d2616}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common">
-      <UniqueIdentifier>{f06e9f52-7869-4487-9db6-3be75dcf1795}</UniqueIdentifier>
+      <UniqueIdentifier>{3d391317-b27d-4dce-aec4-edf1f217fa5d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Win32">
-      <UniqueIdentifier>{b606d04c-d6df-47e2-bc46-e45f16808eb1}</UniqueIdentifier>
+      <UniqueIdentifier>{2b21f306-369f-4f6f-91b3-d9604fda5f69}</UniqueIdentifier>
     </Filter>
     <Filter Include="Server">
-      <UniqueIdentifier>{bfe3b678-d266-4074-a264-2ee59125c148}</UniqueIdentifier>
+      <UniqueIdentifier>{1bef6ba3-882e-4849-88ff-290a25363afd}</UniqueIdentifier>
     </Filter>
     <Filter Include="Server\NPCNav">
-      <UniqueIdentifier>{2aea0ee2-a62c-4ebf-b2c7-98f6070e89f7}</UniqueIdentifier>
+      <UniqueIdentifier>{fb856599-f512-4d78-ac7b-da2c64023ad6}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sound">
-      <UniqueIdentifier>{e9a68a0e-695d-407b-b120-4d5747c6d1b1}</UniqueIdentifier>
+      <UniqueIdentifier>{cd10ac1b-8a76-44c8-9456-ce8ccd2f46e7}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sound\EAX">
-      <UniqueIdentifier>{32dcd8b5-0ade-4f55-a28e-323e867fff0b}</UniqueIdentifier>
+      <UniqueIdentifier>{6fb2e76f-dbb7-4c40-b27f-24806008fd5b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sound\OpenAL">
-      <UniqueIdentifier>{3c027cb1-6d39-4368-ae19-1fa082b686a6}</UniqueIdentifier>
+      <UniqueIdentifier>{55bc3d5d-4ecf-4b28-aec8-9ae01fa3056d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Renderer">
-      <UniqueIdentifier>{05e3f669-338c-4b76-b7eb-4619f08e361d}</UniqueIdentifier>
+      <UniqueIdentifier>{b2c31dc0-ca40-47ab-b34e-2e1d68ce6736}</UniqueIdentifier>
     </Filter>
     <Filter Include="Renderer\png">
-      <UniqueIdentifier>{f7b0b842-43bc-47df-bd28-aa27e22c3179}</UniqueIdentifier>
+      <UniqueIdentifier>{d0748da5-5c47-4b85-a972-652d660ee578}</UniqueIdentifier>
     </Filter>
     <Filter Include="Ghoul2">
-      <UniqueIdentifier>{0de06382-2ad1-4982-ad61-5b654a7aa4cf}</UniqueIdentifier>
+      <UniqueIdentifier>{caf2e437-18bc-4f67-97ef-fc3f40db5668}</UniqueIdentifier>
     </Filter>
     <Filter Include="zlib32">
-      <UniqueIdentifier>{28b01a5c-b18c-4db0-b576-7fe9a0b6d72b}</UniqueIdentifier>
+      <UniqueIdentifier>{96d64309-2b10-4fd7-bb34-c881469dc6e5}</UniqueIdentifier>
     </Filter>
     <Filter Include="encryption">
-      <UniqueIdentifier>{37ad44e5-4089-4600-8488-c781e87a8997}</UniqueIdentifier>
+      <UniqueIdentifier>{fdbb53a2-b8d3-4f47-b95d-ac29d095424e}</UniqueIdentifier>
     </Filter>
     <Filter Include="RMG">
-      <UniqueIdentifier>{f21087b6-51dc-431c-ae57-373b7961394b}</UniqueIdentifier>
+      <UniqueIdentifier>{f3ba3e7b-4f62-4acb-9dc5-680ee89a9585}</UniqueIdentifier>
     </Filter>
     <Filter Include="ICARUS">
-      <UniqueIdentifier>{01558faa-ff65-440b-800b-8c10d9b3ff17}</UniqueIdentifier>
+      <UniqueIdentifier>{46e40db1-22c0-40d6-ad4d-9e59e547cdb4}</UniqueIdentifier>
     </Filter>
     <Filter Include="ff">
-      <UniqueIdentifier>{514ada61-06e3-42ff-b31a-2766289384e4}</UniqueIdentifier>
+      <UniqueIdentifier>{a6737f4a-9b9f-4e71-a4a2-d8ee57b38d26}</UniqueIdentifier>
     </Filter>
     <Filter Include="XboxLive">
-      <UniqueIdentifier>{224c2198-41a3-4c48-8b9c-ee20294ce392}</UniqueIdentifier>
+      <UniqueIdentifier>{d6feced7-c51f-4c03-b659-89d238e30c5e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Ravl">
-      <UniqueIdentifier>{8173bd83-8cb4-4bba-b9d5-c1b145d69ee7}</UniqueIdentifier>
+      <UniqueIdentifier>{2107ccbe-6f92-4365-b8de-3784fdb500d3}</UniqueIdentifier>
     </Filter>
     <Filter Include="Ratl">
-      <UniqueIdentifier>{731a6113-3798-4f9e-bafd-12ccf65546d4}</UniqueIdentifier>
+      <UniqueIdentifier>{13ca69f1-ef90-4c6b-8c90-c0dfcc88c654}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
