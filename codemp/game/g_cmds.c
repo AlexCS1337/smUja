@@ -2954,7 +2954,7 @@ void Cmd_ForceDuel_f(gentity_t *ent)
 	Cmd_EngageDuel_f(ent, 1);
 }
 
-void Cmd_GunDuel_f(gentity_t *ent)
+/*void Cmd_GunDuel_f(gentity_t *ent)
 {
 	char weapStr[64];//Idk, could be less
 	int weap = WP_NONE;
@@ -3029,7 +3029,7 @@ void Cmd_GunDuel_f(gentity_t *ent)
 	}
 
 	Cmd_EngageDuel_f(ent, weap + 2);//Fuck it right here
-}
+}*/
 
 void Weapon_HookFree(gentity_t *ent);
 void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//smU - Serverside - Fullforce Duels
@@ -3148,14 +3148,14 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//smU - Serverside - Fullforc
 				else
 					trap_SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Force) [Unranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname));
 				break;
-			default://Gun duel
+			/*default://Gun duel
 				G_AddEvent(ent, EV_PRIVATE_DUEL, dueltypes[ent->client->ps.clientNum]);
 				G_AddEvent(challenged, EV_PRIVATE_DUEL, dueltypes[challenged->client->ps.clientNum]);
 				if (ent->client->pers.userName[0] && challenged->client->pers.userName[0])
 					trap_SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Gun) [Ranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname));
 				else
 					trap_SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Gun) [Unranked]\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname));
-				break;
+				break;*/
 			}
 
 			G_SetAnim(ent, &ent->client->pers.cmd, SETANIM_BOTH, BOTH_STAND1, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD, 0);
@@ -3242,7 +3242,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//smU - Serverside - Fullforc
 				trap_SendServerCommand(challenged - g_entities, va("cp \"%s ^7%s\n^4(Force Duel)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE")));
 				trap_SendServerCommand(ent - g_entities, va("cp \"%s %s\n^4(Force Duel)\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname));
 				break;
-			default:
+			/*default:
 				switch (dueltype - 2) {
 				case 1:	Com_sprintf(weapStr, sizeof(weapStr), "Stun baton"); break;
 				case 2: Com_sprintf(weapStr, sizeof(weapStr), "Melee"); break;
@@ -3261,7 +3261,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//smU - Serverside - Fullforc
 				case 16: Com_sprintf(weapStr, sizeof(weapStr), "Bryar"); break;
 				case 17: Com_sprintf(weapStr, sizeof(weapStr), "Stun baton"); break;
 				default: Com_sprintf(weapStr, sizeof(weapStr), "Gun"); break;
-				}
+				}*/
 				trap_SendServerCommand(challenged - g_entities, va("cp \"%s ^7%s\n^4(%s Duel)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE"), weapStr));
 				trap_SendServerCommand(ent - g_entities, va("cp \"%s %s\n^4(%s Duel)\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname, weapStr));
 				break;
@@ -4102,12 +4102,12 @@ void ClientCommand( int clientNum ) {
 		return;
 	}
 
-	if (Q_stricmp(cmd, "engage_gunduel") == 0) {
+	/*if (Q_stricmp(cmd, "engage_gunduel") == 0) {
 		if (level.intermissiontime)
 			return;
 		Cmd_GunDuel_f(ent);
 		return;
-	}
+	}*/
 
 	if (Q_stricmp(cmd, "race") == 0) {
 		Cmd_Race_f(ent);
