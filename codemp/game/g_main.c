@@ -4175,10 +4175,44 @@ const char *G_GetStringEdString(char *refSection, char *refName)
 
 	//Well, it would've been lovely doing it the above way, but it would mean mixing
 	//languages for the client depending on what the server is. So we'll mark this as
-	//a stringed reference with @@@ and send the refname to the client, and when it goes
-	//to print it will get scanned for the stringed reference indication and dealt with
+	//a striped reference with @@@ and send the refname to the client, and when it goes
+	//to print it will get scanned for the striped reference indication and dealt with
 	//properly.
-	static char text[1024]={0};
+	static char text[1024] = { 0 };
 	Com_sprintf(text, sizeof(text), "@@@%s", refName);
 	return text;
+}
+
+const char *G_GetStripEdString(char *refSection, char *refName)
+{
+	/*
+	static char text[1024]={0};
+	trap_SP_GetStringTextString(va("%s_%s", refSection, refName), text, sizeof(text));
+	return text;
+	*/
+
+	//Well, it would've been lovely doing it the above way, but it would mean mixing
+	//languages for the client depending on what the server is. So we'll mark this as
+	//a striped reference with @@@ and send the refname to the client, and when it goes
+	//to print it will get scanned for the striped reference indication and dealt with
+	//properly.
+	static char text[1024] = { 0 };
+	Com_sprintf(text, sizeof(text), "@@@%s", refName);
+	return text;
+}
+
+
+
+/*
+==============================
+saved - used to hold ownerNums
+==============================
+*/
+static int saved[MAX_GENTITIES];
+
+
+void JP_Trace(trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask, int capsule, int traceFlags, int useLod) {
+	//BeginHack(passEntityNum);
+	trap_Trace(results, start, mins, maxs, end, passEntityNum, contentmask);
+	//EndHack(passEntityNum);
 }
