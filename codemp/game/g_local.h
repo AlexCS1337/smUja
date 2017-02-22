@@ -130,6 +130,69 @@ extern void *g2SaberInstance;
 extern qboolean gEscaping;
 extern int gEscapeTime;
 
+//================================
+extern int dueltypes[MAX_CLIENTS];//smU/JAPRO - Serverside - Fullforce Duels y is this extern
+
+
+typedef enum {
+	A_ADMINTELE,
+	//A_FREEZE,
+	A_TELEMARK,
+	//A_ADMINBAN,
+	//A_ADMINKICK,
+	A_NOCLIP,
+	//A_GRANTADMIN,
+	//A_CHANGEMAP,
+	//A_CSPRINT,
+	//A_FORCETEAM,
+	//A_LOCKTEAM,
+	//A_VSTR,
+	//A_SEEIP,
+	//A_RENAME,
+	A_LISTMAPS,
+	//A_BUILDHIGHSCORES,
+	//A_WHOIS,
+	//A_LOOKUP,
+	//A_NOFOLLOW,
+	//A_SEEHIDDEN,
+	A_CALLVOTE,
+	A_KILLVOTE
+} admin_type_t;
+
+
+//smU - Serverside - Emote bitrates
+/*typedef enum {
+E_BEG,
+E_BEG2,
+E_BREAKDANCE,
+E_CHEER,
+E_COWER,
+E_DANCE,
+E_HUG,
+E_NOISY,
+E_POINT,
+E_RAGE,
+E_SIT,
+E_SURRENDER,
+E_SMACK,
+E_TAUNT,
+E_VICTORY,
+E_JAWARUN,
+E_BERNIE,
+E_SLEEP,
+E_SABERFLIP,
+E_SLAP,
+E_SIGNAL, //Group them all here, running out of space in this :s
+E_ALL
+} emote_type_t;*/
+
+
+//[smU - Serverside - All - Jcinfo bitvalues
+//#define smU_CINFO_FLIPKICK	(1<<0) //Allow player flipkicking (normal style)
+#define JAPRO_CINFO_FIXSIDEKICK	(1<<6) //allow flipkick with slow sidekick style
+
+
+
 struct gentity_s {
 	//rww - entstate must be first, to correspond with the bg shared entity structure
 	entityState_t	s;				// communicated by server to clients
@@ -429,6 +492,12 @@ typedef struct {
 	// smU serverside
 	qboolean	sawMOTD; // smU, has the client been shown the MOTD?
 
+	qboolean	raceMode;
+	//int			movementStyle;
+
+	qboolean	juniorAdmin;
+	qboolean	fullAdmin;
+
 	int			killCount;
 	int			TKCount;
 	char		IPstring[32];		// yeah, I know, could be 16, but, just in case...
@@ -459,6 +528,63 @@ typedef struct {
 	int			voteCount;			// to prevent people from constantly calling votes
 	int			teamVoteCount;		// to prevent people from constantly calling votes
 	qboolean	teamInfo;			// send team overlay updates?
+
+	qboolean	isJAPRO;//JAPRO - Serverside - Add Clientside Version
+						//qboolean	issmU;//smU - Serverside - Add Clientside Version
+	qboolean	JAWARUN;//JAPRO - Serverside - Add Clientside Version
+	qboolean	centerMuzzle;//JAPRO - Serverside - Check if client wants to center muzzlepoint.
+	qboolean	noDamageNumbers;//Japro
+	qboolean	noDuelTele;
+	qboolean	amfreeze;//JAPRO - Serverside - Admin - Amfreeze admin cmd
+	vec3_t		telemarkOrigin;//JAPRO - Serverside - Admin - Telemark storage
+	float		telemarkAngle;//JAPRO - Serverside - Admin - Telemark storage
+	float		telemarkPitchAngle;//JAPRO - Serverside - Admin - Telemark storage
+	vec3_t		respawnLocation;//JAPRO - Serverside - Admin - Telemark storage
+	float		respawnAngle;
+	//char		clanpass[MAX_QPATH];//Japro - Serverside Clanpass
+	//int			sayteammod;//0 = normal, 1 = clan, 2 = admin
+	int			lastChatTime;//godchat fuck idk why im doing this <- lol
+	int			rate;
+	int			snaps;
+	int			timenudge;
+	int			maxFPS;
+	int			maxPackets;
+	int			thirdPerson;
+	int			thirdPersonRange;
+	int			thirdPersonVertOffset;
+
+	//int			aimSamples[64];//japro anti yawspeed?
+	//int			aimCount;
+
+	qboolean	chatting;
+	//qboolean	raceMode; //move this to session data
+	qboolean	onlyBhop;
+	qboolean	noRoll;
+	qboolean	noCartwheel;
+
+	int			startLag;
+	//int		movementStyle; //move this to session data
+
+	char		saber1[MAX_QPATH], saber2[MAX_QPATH];
+
+	int			vote, teamvote; // 0 = none, 1 = yes, 2 = no
+
+	char		guid[33];
+	char		userName[16];
+	char		lastUserName[16];//To stop duel stats abuse
+	int			duelStartTime;
+	qboolean	backwardsRocket;
+	qboolean	noFollow;
+	qboolean	practice;
+	qboolean	haste;
+	qboolean	validPlugin;
+	qboolean	recordingDemo;//japro autodemo for defrag... :S
+	qboolean	keepDemo;//japro autodemo for defrag... :S
+	qboolean	showChatCP;
+	qboolean	showCenterCP;
+	int			stopRecordingTime;
+	char		oldDemoName[16];
+	char		demoName[MAX_QPATH];
 } clientPersistant_t;
 
 typedef struct renderInfo_s
@@ -935,6 +1061,12 @@ typedef struct {
 
 	char		mTeamFilter[MAX_QPATH];
 
+	int         frameStartTime;
+	struct {
+		int state; // loda fixme, not needed?	- well now it is. OSP: pause
+		int time;
+	} pause;
+
 } level_locals_t;
 
 
@@ -1337,6 +1469,10 @@ extern int gSlowMoDuelTime;
 extern vmCvar_t g_allowSabergun;
 extern vmCvar_t g_allowDebug;
 
+// smU - Movement
+extern vmCvar_t	g_movementStyle;
+//extern vmCvar_t	g_flipKick;
+
 // smU - Dueling
 extern vmCvar_t g_duelStartHealth;
 extern vmCvar_t g_duelStartArmor;
@@ -1348,6 +1484,26 @@ extern vmCvar_t g_allowBlackNames;
 extern vmCvar_t g_consoleMOTD;
 extern vmCvar_t g_centerMOTDTime;
 extern vmCvar_t g_centerMOTD;
+
+//smU ADMIN
+extern	vmCvar_t	g_juniorAdminLevel;
+extern	vmCvar_t	g_fullAdminLevel;
+extern	vmCvar_t	g_juniorAdminPass;
+extern	vmCvar_t	g_fullAdminPass;
+extern	vmCvar_t	g_juniorAdminMsg;
+extern	vmCvar_t	g_fullAdminMsg;
+extern	vmCvar_t	g_allowNoFollow;
+
+//smU RACEMODE / ACCOUNT
+extern	vmCvar_t	g_raceMode;
+extern	vmCvar_t	g_allowRaceTele;
+extern	vmCvar_t	g_forceLogin;
+
+typedef enum matchPause_e { //OSP: pause
+	PAUSE_NONE = 0,
+	PAUSE_PAUSED,
+	PAUSE_UNPAUSING,
+} matchPause_t;
 
 void G_PowerDuelCount(int *loners, int *doubles, qboolean countSpec);
 
