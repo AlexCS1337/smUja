@@ -3353,7 +3353,7 @@ void Cmd_Amlogin_f(gentity_t *ent)
 //[videoP - smU - Serverside - All - Amlogin Function - End]
 
 //[videoP - smU - Serverside - All - Movement Function - Start]
-/*int RaceNameToInteger(char *style);
+int RaceNameToInteger(char *style);
 static void Cmd_MovementStyle_f(gentity_t *ent)
 {
 	char mStyle[32];
@@ -3454,7 +3454,7 @@ static void Cmd_JumpChange_f(gentity_t *ent)
 	}
 	else
 		trap_SendServerCommand(ent - g_entities, "print \"Usage: /jump <level>\n\"");
-}*/
+}
 //[videoP - smU - Serverside - All - Movement & Jump Command Functions - End]
 
 //[videoP - smU - Serverside - All - RaceTele Function - Start]

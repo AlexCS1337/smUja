@@ -569,6 +569,33 @@ typedef struct {
 #define MAX_NETNAME			36
 #define	MAX_VOTE_COUNT		3
 
+typedef struct {//smU- Serverside - Stats
+	int kills;
+	int teamKills;
+	int damageTaken;
+	int damageGiven;
+	int teamDamageGiven;
+	int	duelDamageGiven;
+
+	int startTimeFlag;//could be float?
+	float displacementFlag;
+	float topSpeedFlag;
+	int	displacementFlagSamples;
+
+	int	startTime;//For timers that are not flags
+	int	startLevelTime;//For timers that are not flags
+	float displacement;
+	int	displacementSamples;
+	float topSpeed;
+	int lastCheckpointTime;//For checkpoint floodprotect
+	int	lastResetTime;
+
+	int	teamHealGiven;
+	int	teamEnergizeGiven;
+	int	enemyDrainDamage;
+	int teamDrainDamage;
+} stats_t;
+
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
 typedef struct {
@@ -646,6 +673,7 @@ typedef struct {
 	char		oldDemoName[16];
 	char		demoName[MAX_QPATH];
 
+	stats_t		stats;
 } clientPersistant_t;
 
 typedef struct renderInfo_s
@@ -936,6 +964,21 @@ struct gclient_s {
 	int			lastGenCmd;
 	int			lastGenCmdTime;
 };
+
+typedef enum //movementstyle enum
+{
+	MV_SAGA,
+	MV_JK2,
+	MV_QW,
+	MV_CPM,
+	MV_Q3,
+	MV_PJK,
+	MV_WSW,
+	MV_RJQ3,
+	MV_RJCPM,
+
+	MV_NUMSTYLES,
+} movementStyle_e;
 
 //Interest points
 
