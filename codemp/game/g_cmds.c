@@ -623,6 +623,47 @@ void DeletePlayerProjectiles(gentity_t *ent) {
 	}
 }
 
+void ID_INLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
+{
+	qboolean wasReset = qfalse;;
+
+	if (!ent->client)
+		return;
+	if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag)
+		wasReset = qtrue;
+
+	ent->client->pers.stats.startLevelTime = 0;
+	ent->client->pers.stats.startTime = 0;
+	ent->client->pers.stats.topSpeed = 0;
+	ent->client->pers.stats.displacement = 0;
+	ent->client->pers.stats.displacementSamples = 0;
+	ent->client->pers.stats.startTimeFlag = 0;
+	ent->client->pers.stats.topSpeedFlag = 0;
+	ent->client->pers.stats.displacementFlag = 0;
+	ent->client->pers.stats.displacementFlagSamples = 0;
+	ent->client->ps.stats[STAT_JUMPTIME] = 0;
+	ent->client->ps.fd.forcePower = 100; //Reset their force back to full i guess!
+
+	ent->client->pers.stats.lastResetTime = level.time; //well im just not sure
+
+	if (ent->client->sess.raceMode) {
+		VectorClear(ent->client->ps.velocity); //lel
+		ent->client->ps.duelTime = 0;
+		ent->client->ps.stats[STAT_ONLYBHOP] = 0; //meh
+												  //if (ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] == 3) { //this is a sad hack..
+		ent->client->ps.powerups[PW_YSALAMIRI] = 0; //beh, only in racemode so wont fuck with ppl using amtele as checkpoints midcourse
+													//addlater? ent->client->pers.haste = qfalse;
+													//}
+		if (ent->client->sess.movementStyle == 7 || ent->client->sess.movementStyle == 8) { //Get rid of their rockets when they tele/noclip..?
+			DeletePlayerProjectiles(ent);
+		}
+	}
+
+	if (wasReset && print)
+		//trap->SendServerCommand( ent-g_entities, "print \"Timer reset!\n\""); //console spam is bad
+		trap_SendServerCommand(ent - g_entities, "cp \"Timer reset!\n\n\n\n\n\n\n\n\n\n\n\n\"");
+}
+
 /*
 ==================
 Cmd_Noclip_f
@@ -630,8 +671,14 @@ Cmd_Noclip_f
 argv(0) noclip
 ==================
 */
+
+void Cmd_RaceNoclip_f(gentity_t *ent) {
+	trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", ent->client->noclip ? "noclip OFF" : "noclip ON"));
+	ent->client->noclip = !ent->client->noclip;
+	ResetPlayerTimers(ent, qtrue);
+}
 void Cmd_Noclip_f( gentity_t *ent ) {
-	char	*msg;
+	/*char	*msg;
 
 	if ( !CheatsOk( ent ) ) {
 		return;
@@ -644,7 +691,104 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 	}
 	ent->client->noclip = !ent->client->noclip;
 
-	trap_SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+	trap_SendServerCommand( ent-g_entities, va("print \"%s\"", msg));*/
+	if (ent->client && ent->client->ps.duelInProgress && ent->client->pers.lastUserName[0]) {
+		gentity_t *duelAgainst = &g_entities[ent->client->ps.duelIndex];
+		if (duelAgainst->client && duelAgainst->client->pers.lastUserName[0]) {
+			trap_SendServerCommand(ent - g_entities, va("print \"You are not authorized to use this command (noclip) in ranked duels.\n\""));
+			return; //Dont allow noclip in ranked duels ever
+		}
+	}
+
+	//if (!CheatsOk(ent) && ent->client)
+	//{
+	if (ent->client->sess.fullAdmin)//Logged in as full admin
+	{
+		if (!(g_fullAdminLevel.integer & (1 << A_NOCLIP)))
+		{
+			if (ent->client->noclip) {
+				ent->client->noclip = qfalse;
+				trap_SendServerCommand(ent - g_entities, "print \"noclip OFF\n\"");
+				AmTeleportPlayer(ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue);
+				ResetPlayerTimers(ent, qtrue);
+			}
+			else if (g_allowRaceTele.integer > 1 && ent->client->sess.raceMode) {
+				Cmd_RaceNoclip_f(ent);
+				return;
+			}
+			else
+				trap_SendServerCommand(ent - g_entities, va("print \"You are not authorized to use this command (noclip).\n\""));
+			return;
+		}
+	}
+	else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
+	{
+		if (!(g_juniorAdminLevel.integer & (1 << A_NOCLIP)))
+		{
+			if (ent->client->noclip) {
+				ent->client->noclip = qfalse;
+				trap_SendServerCommand(ent - g_entities, "print \"noclip OFF\n\"");
+				AmTeleportPlayer(ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue);
+				ResetPlayerTimers(ent, qtrue);
+			}
+			else if (g_allowRaceTele.integer > 1 && ent->client->sess.raceMode) {
+				Cmd_RaceNoclip_f(ent);
+				return;
+			}
+			else
+				trap_SendServerCommand(ent - g_entities, va("print \"You are not authorized to use this command (noclip).\n\""));
+			return;
+		}
+	}
+	else//Not logged in
+	{
+		if (ent->client->noclip) {
+			ent->client->noclip = qfalse;
+			trap_SendServerCommand(ent - g_entities, "print \"noclip OFF\n\"");
+			AmTeleportPlayer(ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue); //Good
+			ResetPlayerTimers(ent, qtrue);
+		}
+		else if (g_allowRaceTele.integer > 1 && ent->client->sess.raceMode) {
+			Cmd_RaceNoclip_f(ent);
+			return;
+		}
+		else
+			trap_SendServerCommand(ent - g_entities, "print \"Cheats are not enabled. You must be logged in to use this command (noclip).\n\"");//replaces "Cheats are not enabled on this server." msg
+		return;
+	}
+
+	if (trap_Argc() == 2) {
+		char client[MAX_NETNAME];
+		int clientid;
+		gentity_t *target = NULL;
+
+		trap_Argv(1, client, sizeof(client));
+		clientid = JP_ClientNumberFromString(ent, client);
+		if (clientid == -1 || clientid == -2)
+			return;
+		target = &g_entities[clientid];
+		if (!target->client)
+			return;
+		trap_SendServerCommand(target - g_entities, va("print \"%s\n\"", target->client->noclip ? "noclip OFF" : "noclip ON"));
+		if (target->client->sess.raceMode && target->client->noclip)
+			AmTeleportPlayer(target, target->client->ps.origin, target->client->ps.viewangles, qtrue, qtrue); //Good
+		target->client->noclip = !target->client->noclip;
+		ResetPlayerTimers(target, qtrue);
+		return;
+	}
+	if (trap_Argc() == 1) {
+		trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", ent->client->noclip ? "noclip OFF" : "noclip ON"));
+		if (ent->client->sess.raceMode && ent->client->noclip)
+			AmTeleportPlayer(ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue); //Good
+		ent->client->noclip = !ent->client->noclip;
+		ResetPlayerTimers(ent, qtrue);
+		return;
+	}
+	/*}
+	else { //not needed..
+	trap_SendServerCommand(ent - g_entities, va("print \"%s\n\"", ent->client->noclip ? "noclip OFF" : "noclip ON"));
+	ent->client->noclip = !ent->client->noclip;
+	}*/
 }
 
 
