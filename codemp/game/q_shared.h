@@ -346,6 +346,37 @@ static float LittleFloat (const float *l) { return FloatSwap(l); }
 
 //=============================================================
 
+// Wip stuff taken from japp, may not work here
+/*// type definitions
+typedef unsigned char byte;
+typedef float real32_t;
+typedef double real64_t;
+typedef long double real80_t;
+
+static const uint32_t qfalse = 0;
+static const uint32_t qtrue = 1;
+typedef uint32_t qboolean;
+
+// 32 bit field aliasing
+typedef union byteAlias_u {
+	float f;
+	int32_t i;
+	uint32_t ui;
+	byte b[4];
+	char c[4];
+} byteAlias_t;
+
+typedef int32_t qhandle_t, fxHandle_t, sfxHandle_t, fileHandle_t, clipHandle_t;
+
+#define NULL_HANDLE ((qhandle_t)0)
+#define NULL_FILE ((fileHandle_t)0)*/
+
+// helpers
+#define ARRAY_LEN( x )		( sizeof( x ) / sizeof( *(x) ) )
+#define STRING( a )			#a
+#define XSTRING( a )		STRING( a )
+//#define VALIDSTRING( a )	( ( a != nullptr ) && ( a[0] != '\0' ) )
+
 typedef unsigned char 		byte;
 typedef unsigned short		word;
 typedef unsigned long		ulong;
@@ -519,6 +550,45 @@ void Com_Memcpy (void* dest, const void* src, const size_t count);
 #define	CIN_hold	4
 #define CIN_silent	8
 #define CIN_shader	16
+
+/*typedef union vector2_u {
+	struct { float x, y; };
+	struct { float w, h; };
+	// s, t?
+	float raw[2];
+} vector2;
+typedef union ivector2_u {
+	struct { int32_t x, y; };
+	struct { int32_t w, h; };
+	// s, t?
+	int32_t raw[2];
+} ivector2;
+
+typedef union vector3_u {
+	struct { float x, y, z; };
+	struct { float r, g, b; }; // red, green, blue?
+	struct { float pitch, yaw, roll; };
+	float raw[3];
+} vector3;
+typedef union ivector3_u {
+	struct { int32_t x, y, z; };
+	struct { int32_t r, g, b; }; // red, green, blue?
+	struct { int32_t pitch, yaw, roll; };
+	int32_t raw[3];
+} ivector3;
+
+typedef union vector4_u {
+	struct { float x, y, z, w; };
+	struct { float r, g, b, a; };
+	// red, green, blue, alpha?
+	float raw[4];
+} vector4;
+typedef union ivector4_u {
+	struct { int32_t x, y, z, w; };
+	struct { int32_t r, g, b, a; };
+	// red, green, blue, alpha?
+	int32_t raw[4];
+} ivector4;*/
 
 /*
 ==============================================================
@@ -1698,7 +1768,11 @@ typedef struct {
 	cvarHandle_t	handle;
 	int			modificationCount;
 	float		value;
-	int			integer;
+	//int			integer;
+	union {
+		int		integer;
+		unsigned int		bits;
+	};
 	char		string[MAX_CVAR_VALUE_STRING];
 } vmCvar_t;
 

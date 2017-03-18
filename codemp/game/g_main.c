@@ -247,6 +247,11 @@ vmCvar_t	g_juniorAdminMsg;
 vmCvar_t	g_fullAdminMsg;
 vmCvar_t	g_allowNoFollow;
 
+// smU - emotes
+vmCvar_t	g_allowEmotes;
+vmCvar_t	g_allowDropSaber;
+vmCvar_t	g_allowJetpack;
+
 //smURACE / ACCOUNTS
 vmCvar_t	g_raceMode;
 vmCvar_t	g_allowRaceTele;
@@ -426,26 +431,26 @@ static cvarTable_t		gameCvarTable[] = {
 
 	{ &g_rankings, "g_rankings", "0", 0, 0, qfalse},
 
-	{ &g_dismember, "g_dismember", "0", CVAR_ARCHIVE, 0, qtrue  },
-	{ &g_forceDodge, "g_forceDodge", "1", 0, 0, qtrue  },
+	{ &g_dismember, "g_dismember", "0", CVAR_ARCHIVE, 0, qtrue },
+	{ &g_forceDodge, "g_forceDodge", "1", 0, 0, qtrue },
 
 	{ &g_timeouttospec, "g_timeouttospec", "70", CVAR_ARCHIVE, 0, qfalse },
 
-	{ &g_saberDmgVelocityScale, "g_saberDmgVelocityScale", "0", CVAR_ARCHIVE, 0, qtrue  },
-	{ &g_saberDmgDelay_Idle, "g_saberDmgDelay_Idle", "350", CVAR_ARCHIVE, 0, qtrue  },
-	{ &g_saberDmgDelay_Wound, "g_saberDmgDelay_Wound", "0", CVAR_ARCHIVE, 0, qtrue  },
+	{ &g_saberDmgVelocityScale, "g_saberDmgVelocityScale", "0", CVAR_ARCHIVE, 0, qtrue },
+	{ &g_saberDmgDelay_Idle, "g_saberDmgDelay_Idle", "350", CVAR_ARCHIVE, 0, qtrue },
+	{ &g_saberDmgDelay_Wound, "g_saberDmgDelay_Wound", "0", CVAR_ARCHIVE, 0, qtrue },
 
 #ifndef FINAL_BUILD
-	{ &g_saberDebugPrint, "g_saberDebugPrint", "0", CVAR_CHEAT, 0, qfalse  },
+	{ &g_saberDebugPrint, "g_saberDebugPrint", "0", CVAR_CHEAT, 0, qfalse },
 #endif
 	{ &g_debugSaberLocks, "g_debugSaberLocks", "0", CVAR_CHEAT, 0, qfalse },
 	{ &g_saberLockRandomNess, "g_saberLockRandomNess", "2", CVAR_CHEAT, 0, qfalse },
-// nmckenzie: SABER_DAMAGE_WALLS
+		// nmckenzie: SABER_DAMAGE_WALLS
 	{ &g_saberWallDamageScale, "g_saberWallDamageScale", "0.4", CVAR_SERVERINFO, 0, qfalse },
 
 	{ &d_saberStanceDebug, "d_saberStanceDebug", "0", 0, 0, qfalse },
 
-	{ &g_siegeTeamSwitch, "g_siegeTeamSwitch", "1", CVAR_SERVERINFO|CVAR_ARCHIVE, qfalse },
+	{ &g_siegeTeamSwitch, "g_siegeTeamSwitch", "1", CVAR_SERVERINFO | CVAR_ARCHIVE, qfalse },
 
 	{ &bg_fighterAltControl, "bg_fighterAltControl", "0", CVAR_SERVERINFO, 0, qtrue },
 
@@ -468,14 +473,14 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &d_JediAI, "d_JediAI", "0", CVAR_CHEAT },
 	{ &d_noGroupAI, "d_noGroupAI", "0", CVAR_CHEAT },
 	{ &d_asynchronousGroupAI, "d_asynchronousGroupAI", "0", CVAR_CHEAT },
-	
-	//0 = never (BORING)
-	//1 = kyle only
-	//2 = kyle and last enemy jedi
-	//3 = kyle and any enemy jedi
-	//4 = kyle and last enemy in a group
-	//5 = kyle and any enemy
-	//6 = also when kyle takes pain or enemy jedi dodges player saber swing or does an acrobatic evasion
+
+		//0 = never (BORING)
+		//1 = kyle only
+		//2 = kyle and last enemy jedi
+		//3 = kyle and any enemy jedi
+		//4 = kyle and last enemy in a group
+		//5 = kyle and any enemy
+		//6 = also when kyle takes pain or enemy jedi dodges player saber swing or does an acrobatic evasion
 
 	{ &d_slowmodeath, "d_slowmodeath", "0", CVAR_CHEAT },
 
@@ -483,42 +488,48 @@ static cvarTable_t		gameCvarTable[] = {
 
 	{ &g_spskill, "g_npcspskill", "0", CVAR_ARCHIVE | CVAR_USERINFO },
 
-	//for overriding the level defaults
-	{ &g_siegeTeam1, "g_siegeTeam1", "none", CVAR_ARCHIVE|CVAR_SERVERINFO, 0, qfalse  },
-	{ &g_siegeTeam2, "g_siegeTeam2", "none", CVAR_ARCHIVE|CVAR_SERVERINFO, 0, qfalse  },
+		//for overriding the level defaults
+	{ &g_siegeTeam1, "g_siegeTeam1", "none", CVAR_ARCHIVE | CVAR_SERVERINFO, 0, qfalse },
+	{ &g_siegeTeam2, "g_siegeTeam2", "none", CVAR_ARCHIVE | CVAR_SERVERINFO, 0, qfalse },
 
-	//mainly for debugging with bots while I'm not around (want the server to
-	//cycle through levels naturally)
-	{ &d_noIntermissionWait, "d_noIntermissionWait", "0", CVAR_CHEAT, 0, qfalse  },
+		//mainly for debugging with bots while I'm not around (want the server to
+		//cycle through levels naturally)
+	{ &d_noIntermissionWait, "d_noIntermissionWait", "0", CVAR_CHEAT, 0, qfalse },
 
-	{ &g_austrian, "g_austrian", "0", CVAR_ARCHIVE, 0, qfalse  },
-// nmckenzie:
-// DUEL_HEALTH
+	{ &g_austrian, "g_austrian", "0", CVAR_ARCHIVE, 0, qfalse },
+		// nmckenzie:
+		// DUEL_HEALTH
 	{ &g_showDuelHealths, "g_showDuelHealths", "0", CVAR_SERVERINFO },
-	{ &g_powerDuelStartHealth, "g_powerDuelStartHealth", "150", CVAR_ARCHIVE, 0, qtrue  },
-	{ &g_powerDuelEndHealth, "g_powerDuelEndHealth", "90", CVAR_ARCHIVE, 0, qtrue  },
+	{ &g_powerDuelStartHealth, "g_powerDuelStartHealth", "150", CVAR_ARCHIVE, 0, qtrue },
+	{ &g_powerDuelEndHealth, "g_powerDuelEndHealth", "90", CVAR_ARCHIVE, 0, qtrue },
 
-// smU - Saber
+		// smU - Saber
 	{ &g_allowSabergun, "g_allowSabergun", "1", CVAR_ARCHIVE, 0, qtrue },
-	{ &g_tweakSaber, "g_tweakSaber", "0", CVAR_ARCHIVE, 0, qtrue},//add in CVU_tweakSaber later
+	{ &g_tweakSaber, "g_tweakSaber", "0", CVAR_ARCHIVE, 0, qtrue },//add in CVU_tweakSaber later
 
 // smU - Movement
-	{ &g_flipKick, "g_flipKick", "0", CVAR_ARCHIVE, 0, qtrue},
+	{ &g_flipKick, "g_flipKick", "0", CVAR_ARCHIVE, 0, qtrue },
 	{ &g_movementStyle, "g_movementStyle", "1", CVAR_ARCHIVE, 0, qtrue },
 
-// smU - Dueling
+		// smU - Dueling
 	{ &g_duelStartHealth, "g_duelStartHealth", "0", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_duelStartArmor, "g_duelStartArmor", "0", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_duelDistanceLimit, "g_duelDistanceLimit", "0", CVAR_ARCHIVE, 0, qtrue },
 	{ &g_allowGunDuel, "g_allowGunDuel", "1", CVAR_ARCHIVE, 0, qtrue },
 
-// smU - Other
-	{ &g_allowBlackNames, "g_allowBlackNames", "0", CVAR_ARCHIVE, 0, qtrue},
+		// smU - Other
+	{ &g_allowBlackNames, "g_allowBlackNames", "0", CVAR_ARCHIVE, 0, qtrue },
 	{ &g_allowDebug, "g_allowDebug", "0", CVAR_ARCHIVE, 0, qtrue },
 	{ &g_consoleMOTD, "g_consoleMOTD", "", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_centerMOTDTime, "g_centerMOTDTime", "5", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_centerMOTD, "g_centerMOTD", "", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_playerLog, "g_playerLog", "0", CVAR_ARCHIVE, 0, qtrue },
+
+		// smU - emotes
+
+	{ &g_allowEmotes, "g_allowEmotes", "1", CVAR_ARCHIVE, 0, qtrue },
+	{ &g_allowDropSaber, "g_allowDropSaber", "0", CVAR_ARCHIVE, 0, qtrue },
+	{ &g_allowJetpack, "g_allowJetpack", "0",CVAR_ARCHIVE, 0, qtrue},
 
 		//smU ADMIN
 	{ &g_juniorAdminLevel, "g_juniorAdminLevel", "0", CVAR_ARCHIVE, 0, qfalse },

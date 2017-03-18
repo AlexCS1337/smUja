@@ -2249,9 +2249,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	if (firstTime || level.newSession) {
 		trap_SendServerCommand(ent - g_entities, va("print \"----------------------- smU (alpha-1.201) written by ^5Sm^7oo -----------------------\n\""));
 		trap_SendServerCommand(ent - g_entities, va("print \"This mod is inteded to fix known bugs and add some fun features!\n\""));
-		trap_SendServerCommand(ent - g_entities, va("print \"So far you can now toggle allowSabergun, allowBlackNames, sv_cheats and allowDebug\n\""));
-		trap_SendServerCommand(ent - g_entities, va("print \"Multiple duels are allowed and starting health/armor can be set.\n\""));
-		trap_SendServerCommand(ent - g_entities, va("print \"Some familar commands are present; aminfo, amTele, race, engage_gunduel, engage_fullforceduel, etc\n\""));
+		trap_SendServerCommand(ent - g_entities, va("print \"Please type /aminfo in console for more information..\n\""));
 		trap_SendServerCommand(ent - g_entities, va("print \"--------------------------------------------------------------------------\n\""));
 		trap_SendServerCommand(ent - g_entities, va("print \"\n^5[ ^7This server is running smU alphav1.201 | jkhub.org^5 ]\n\""));
 	}
