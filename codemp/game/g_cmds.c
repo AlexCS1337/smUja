@@ -4052,8 +4052,6 @@ void Cmd_Amlogout_f(gentity_t *ent)
 }
 //[smU - Serverside - All - Amlogout Function - End]
 
-
-
 //[smU - Serverside - All - emotes - Start]
 
 typedef unsigned int     size_t;
@@ -4330,62 +4328,9 @@ typedef struct command_s {
 	unsigned int	flags;
 } command_t;
 
-static int cmdcmp(const void *a, const void *b) {
+/*static int cmdcmp(const void *a, const void *b) {
 	return Q_stricmp((const char *)a, ((command_t*)b)->name);
-}
-
-/*static const command_t commands[] = {
-	{ "aimgun", Cmd_Emote_aimgun, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "asleep", Cmd_Emote_sleep, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "atease", Cmd_Emote_atease, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "beg", Cmd_Emote_beg, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "breakdance", Cmd_Emote_breakdance, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "breakdance2", Cmd_Emote_breakdance2, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "cower", Cmd_Emote_cower, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "dance1", Cmd_Emote_dance1, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "dance2", Cmd_Emote_dance2, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "dance3", Cmd_Emote_dance3, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "die", Cmd_Emote_die, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "die2", Cmd_Emote_die2, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "dropsaber", Cmd_DropSaber, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "fabulous", Cmd_Emote_fabulous, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "finishinghim", Cmd_Emote_finishinghim, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "harlem", Cmd_Emote_harlem, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "heal", Cmd_Emote_heal, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "hello", Cmd_Emote_hello, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "hiltthrow1", Cmd_Emote_amhiltthrow1, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "hiltthrow2", Cmd_Emote_amhiltthrow2, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "hips", Cmd_Emote_hips, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "hug", Cmd_Emote_hug, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "info", Cmd_aminfo_f, GTB_ALL, 0 },
-	{ "kiss", Cmd_Emote_kiss, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "kneel", Cmd_Emote_kneel, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "kneel2", Cmd_Emote_kneel2, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "knockmedown", Cmd_KnockMeDown, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "neo", Cmd_Emote_neo, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "nod", Cmd_Emote_nod, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "noisy", Cmd_Emote_noisy, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "power", Cmd_Emote_power, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "radio", Cmd_Emote_radio, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "admsay", Cmd_SayAdmin_f, GTB_ALL, 0 },
-	{ "shake", Cmd_Emote_shake, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "shovel", Cmd_Emote_shovel, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "sit1", Cmd_Emote_sit1, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "sit2", Cmd_Emote_sit2, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "sit3", Cmd_Emote_sit3, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "sit4", Cmd_Emote_sit4, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "sit6", Cmd_Emote_sit6, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "smack1", Cmd_Emote_smack1, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "smack2", Cmd_Emote_smack2, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "stand", Cmd_Emote_stand, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "stepback", Cmd_Emote_stepback, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "suggest", Cmd_Emote_suggest, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "surrender", Cmd_Emote_surrender, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "victory", Cmd_Emote_victory, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "wait", Cmd_Emote_wait, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-	{ "won", Cmd_Emote_won, GTB_ALL, CMDFLAG_NOINTERMISSION | CMDFLAG_ALIVE },
-};
-static size_t numCommands = ARRAY_LEN(commands);*/
+}*/
 
 // returns the flags that failed to pass, or 0 if the command is allowed to be executed
 unsigned int G_CmdValid(const gentity_t *ent, const command_t *cmd) {
