@@ -3371,6 +3371,30 @@ void ClientThink_real( gentity_t *ent ) {
 		ent->client->ps.useDelay = level.time + 100;
 	}
 
+	// leave emotes
+	if (ent->client->emote.freeze) {
+		const qboolean wantsOut = ent->client->pers.cmd.upmove != 0 || (ent->client->pers.cmd.buttons & BUTTON_USE);
+		const qboolean animDone = ent->client->ps.forceHandExtendTime <= level.time
+			&& ent->client->ps.forceHandExtendTime != 0x7FFFFFFF;
+		const qboolean infinite = ent->client->ps.forceHandExtendTime == 0x7FFFFFFF;
+
+		if (animDone || (wantsOut && infinite)) {
+			if (ent->client->emote.nextAnim != MAX_ANIMATIONS) {
+				// chain to next animation
+				ent->client->ps.forceHandExtendTime = level.time + BG_AnimLength(ent->localAnimIndex, ent->client->emote.nextAnim);
+				ent->client->ps.forceDodgeAnim = ent->client->emote.nextAnim;
+				ent->client->emote.nextAnim = MAX_ANIMATIONS;
+			}
+			else {
+				// leave emote
+				ent->client->ps.forceHandExtend = HANDEXTEND_NONE;
+				ent->client->ps.forceHandExtendTime = level.time;
+				ent->client->ps.forceRestricted = qfalse;
+				ent->client->emote.freeze = qfalse;
+			}
+		}
+	}
+
 	// link entity now, after any personal teleporters have been used
 	trap_LinkEntity (ent);
 	if ( !ent->client->noclip ) {
