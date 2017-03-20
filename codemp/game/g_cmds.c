@@ -4589,7 +4589,7 @@ void ClientCommand( int clientNum ) {
 				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
 				return;
 			}
-			Cmd_Emote_aimgun(ent);
+			Cmd_Emote_kneel(ent);
 			return;
 		}
 
@@ -4599,7 +4599,7 @@ void ClientCommand( int clientNum ) {
 				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
 				return;
 			}
-			Cmd_Emote_aimgun(ent);
+			Cmd_Emote_kneel2(ent);
 			return;
 		}
 
