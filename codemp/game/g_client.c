@@ -2365,6 +2365,8 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	te->s.eventParm = clientNum;
 
 	if (firstTime || level.newSession) {
+		trap_SendServerCommand(ent - g_entities, va("print \"Please type /about in console for more information..\n\""));
+		trap_SendServerCommand(ent - g_entities, va("print \"--------------------------------------------------------------------------\n\""));
 		trap_SendServerCommand(ent - g_entities, va("print \"\n^5[ ^7This server is running smU alphav1.113 | jkhub.org^5 ]\n\""));
 	}
 	// for statistics

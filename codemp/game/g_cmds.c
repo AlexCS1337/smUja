@@ -3425,8 +3425,24 @@ void Cmd_Aminfo_f(gentity_t *ent)
 
 	//Q_strncpyz(buf, va("^5 Hi there, %s^5.  This server is using the jk2PRO mod.\n", ent->client->pers.netname), sizeof(buf));
 	trap_SendServerCommand(ent->client->ps.clientNum, va("print \"^5 Hi there, %s^5.  This server is using the smU mod.\n\n\"", ent->client->pers.netname));
-	trap_SendServerCommand(ent->client->ps.clientNum, va("print \"^3Have you tried out Full Force Duel Mode yet? Use /engage_fullforceduel while looking at your opponent\n\""));
-	trap_SendServerCommand(ent->client->ps.clientNum, va("print \"^3to challenge them to a FF duel.  Also try out /engage_gunduel! You can even bind these commands!\n\""));
+	trap_SendServerCommand(ent->client->ps.clientNum, va("print \"^3There are a bunch of WIP commands such as racemode ( /race ), getjetpack and emotes, try /listemotes\n\""));
+	//trap_SendServerCommand(ent->client->ps.clientNum, va("print \"^3Have you tried out Full Force Duel Mode yet? Use /engage_fullforceduel while looking at your opponent\n\""));
+	//trap_SendServerCommand(ent->client->ps.clientNum, va("print \"^3to challenge them to a FF duel.  Also try out /engage_gunduel! You can even bind these commands!\n\""));
+	return;
+}
+
+void Cmd_ListEmotes_f(gentity_t *ent)
+{
+	char buf[MAX_STRING_CHARS - 64] = { 0 };
+
+	if (!ent || !ent->client)
+		return;
+
+	trap_SendServerCommand(ent->client->ps.clientNum, va("print \"^5 Here is a list of emotes...\n\n\"", ent->client->pers.netname));
+	trap_SendServerCommand(ent->client->ps.clientNum, va("print \"aimgun, sleep, atease, beg, breakdance, breakdance2, cower, dance1, dance2, dance3\n\""));
+	trap_SendServerCommand(ent->client->ps.clientNum, va("print \"die, die2, dropsaber, fabulous, finishinghim, harlem, heal, hello, hiltthrow1, hiltthrow2\n\""));
+	trap_SendServerCommand(ent->client->ps.clientNum, va("print \"hips, kneel, kneel2, knockmedown, neo, nod, noisy, power, radio, shake, shovel, sit1, sit2\n\""));
+	trap_SendServerCommand(ent->client->ps.clientNum, va("print \"sit3, sit4, sit6, smack1, smack2, stand, stepback, suggest, surrender, victory, emwait, emwon\n\""));
 	return;
 }
 //[videoP - smU - Serverside - All - Aminfo Function - End]
@@ -4014,6 +4030,269 @@ void Cmd_Amlogout_f(gentity_t *ent)
 }
 //[smU - Serverside - All - Amlogout Function - End]
 
+//[smU - Serverside - All - emotes - Start]
+
+typedef unsigned int     size_t;
+// must be in alphabetical order
+static const emote_t emotes[] = {
+	{ "aimgun", BOTH_STAND5TOAIM, MAX_ANIMATIONS, EMF_HOLD | EMF_HOLSTER },
+	{ "amhiltthrow1", BOTH_SABERTHROW1START, BOTH_SABERTHROW1STOP, EMF_NONE },
+	{ "amhiltthrow2", BOTH_SABERTHROW2START, BOTH_SABERTHROW2STOP, EMF_NONE },
+	{ "atease", BOTH_STAND4, MAX_ANIMATIONS, EMF_STATIC | EMF_HOLD | EMF_HOLSTER },
+	{ "beg", BOTH_KNEES2, MAX_ANIMATIONS, EMF_HOLD | EMF_HOLSTER },
+	{ "breakdance", BOTH_FORCE_GETUP_B4, MAX_ANIMATIONS, EMF_NONE },
+	{ "breakdance2", BOTH_FORCE_GETUP_B6, MAX_ANIMATIONS, EMF_NONE },
+	{ "cower", BOTH_COWER1_START, BOTH_COWER1, EMF_HOLSTER },
+	{ "dance1", BOTH_TURNSTAND1, MAX_ANIMATIONS, EMF_STATIC | EMF_HOLD },
+	{ "dance2", BOTH_TURNSTAND4, MAX_ANIMATIONS, EMF_STATIC | EMF_HOLD | EMF_HOLSTER },
+	{ "dance3", BOTH_TURNSTAND5, MAX_ANIMATIONS, EMF_STATIC | EMF_HOLD },
+	{ "die", BOTH_HIT1, BOTH_FORCE_GETUP_F2, EMF_STATIC | EMF_HOLD },
+	{ "die2", BOTH_DEATH15, BOTH_FORCE_GETUP_F2, EMF_STATIC | EMF_HOLD },
+	{ "fabulous", BOTH_K7_S7_TR, MAX_ANIMATIONS, EMF_HOLD },
+	{ "finishinghim", BOTH_SABERKILLER1, MAX_ANIMATIONS, EMF_STATIC },
+	{ "harlem", BOTH_FORCE_DRAIN_GRABBED, MAX_ANIMATIONS, EMF_STATIC | EMF_HOLD },
+	{ "heal", BOTH_FORCEHEAL_START, BOTH_FORCEHEAL_STOP, EMF_STATIC | EMF_HOLD | EMF_HOLSTER },
+	{ "hello", BOTH_SILENCEGESTURE1, MAX_ANIMATIONS, EMF_NONE },
+	{ "hips", BOTH_STAND5TOSTAND8, BOTH_STAND8TOSTAND5, EMF_STATIC | EMF_HOLD | EMF_HOLSTER },
+	{ "kneel", BOTH_CROUCH3, BOTH_UNCROUCH3, EMF_STATIC | EMF_HOLD | EMF_HOLSTER },
+	{ "kneel2", BOTH_ROSH_PAIN, BOTH_UNCROUCH3, EMF_STATIC | EMF_HOLD | EMF_HOLSTER },
+	{ "neo", BOTH_FORCE_GETUP_B4, MAX_ANIMATIONS, EMF_NONE },
+	{ "nod", BOTH_HEADNOD, MAX_ANIMATIONS, EMF_NONE },
+	{ "noisy", BOTH_SONICPAIN_HOLD, BOTH_SONICPAIN_END, EMF_HOLD },
+	{ "power", BOTH_FORCE_GETUP_F2, MAX_ANIMATIONS, EMF_NONE },
+	{ "radio", BOTH_TALKCOMM1START, BOTH_TALKCOMM1STOP, EMF_HOLD | EMF_HOLSTER },
+	{ "shake", BOTH_HEADSHAKE, MAX_ANIMATIONS, EMF_NONE },
+	{ "shovel", BOTH_TUSKENATTACK2, MAX_ANIMATIONS, EMF_NONE },
+	{ "sit1", BOTH_SIT1, MAX_ANIMATIONS, EMF_STATIC | EMF_HOLD },
+	{ "sit2", BOTH_SIT2, MAX_ANIMATIONS, EMF_STATIC | EMF_HOLD | EMF_HOLSTER },
+	{ "sit3", BOTH_SIT3, MAX_ANIMATIONS, EMF_STATIC | EMF_HOLD | EMF_HOLSTER },
+	{ "sit4", BOTH_SIT4, MAX_ANIMATIONS, EMF_STATIC | EMF_HOLD | EMF_HOLSTER },
+	{ "sit6", BOTH_SIT6, MAX_ANIMATIONS, EMF_STATIC | EMF_HOLD | EMF_HOLSTER },
+	{ "sleep", BOTH_SLEEP1, BOTH_SLEEP1GETUP, EMF_HOLD | EMF_HOLSTER | EMF_STATIC },
+	{ "smack1", BOTH_FORCEGRIP3THROW, MAX_ANIMATIONS, EMF_NONE },
+	{ "smack2", BOTH_TOSS1, MAX_ANIMATIONS, EMF_NONE },
+	{ "stand", BOTH_STAND8, MAX_ANIMATIONS, EMF_STATIC | EMF_HOLD },
+	{ "stepback", BOTH_FORCE_2HANDEDLIGHTNING, MAX_ANIMATIONS, EMF_NONE },
+	{ "suggest", BOTH_STAND1_TALK3, MAX_ANIMATIONS, EMF_NONE },
+	{ "surrender", TORSO_SURRENDER_START, TORSO_SURRENDER_STOP, EMF_HOLD | EMF_HOLSTER },
+	{ "victory", BOTH_TAVION_SCEPTERGROUND, MAX_ANIMATIONS, EMF_NONE },
+	{ "wait", BOTH_STAND10, BOTH_STAND10TOSTAND1, EMF_STATIC | EMF_HOLD | EMF_HOLSTER },
+	{ "won", TORSO_HANDSIGNAL1, MAX_ANIMATIONS, EMF_NONE },
+};
+static const size_t numEmotes = ARRAY_LEN(emotes);
+
+static int emotecmp(const void *a, const void *b) {
+	return strcmp((const char *)a, ((const emote_t *)b)->name);
+}
+
+qboolean SetEmote(gentity_t *ent, const emote_t *emote) {
+	forceHandAnims_t handExtend = HANDEXTEND_TAUNT;
+	int emoteTime;
+
+	if (!(g_allowEmotes.bits & (1 << g_gametype.integer))) {
+		trap_SendServerCommand(ent - g_entities, "print \"Emotes are not allowed in this gametype\n\"");
+		return qfalse;
+	}
+
+	// busy
+	if (ent->client->ps.weaponTime > 0 || ent->client->ps.saberMove > LS_READY || ent->client->ps.fd.forcePowersActive
+		|| ent->client->ps.groundEntityNum == ENTITYNUM_NONE || ent->client->ps.duelInProgress
+		|| BG_InKnockDown(ent->client->ps.legsAnim) || BG_InRoll(&ent->client->ps, ent->client->ps.legsAnim)
+		|| ent->client->ps.forceHandExtend != HANDEXTEND_NONE || ent->client->emote.freeze)
+	{
+		return qfalse;
+	}
+
+	if (emote->flags & EMF_STATIC) {
+		// emotes that require you to be standing still
+		VectorClear(ent->client->ps.velocity);
+		handExtend = HANDEXTEND_DODGE;
+	}
+	if (emote->flags & EMF_HOLD) {
+		// hold animation on torso
+		emoteTime = 0x7FFFFFFF;
+	}
+	else {
+		// once off actions
+		emoteTime = level.time + BG_AnimLength(ent->localAnimIndex, emote->animLoop);
+	}
+
+	// holster saber if necessary
+	if ((emote->flags & EMF_HOLSTER) && ent->client->ps.weapon == WP_SABER && ent->client->ps.saberHolstered < 2) {
+		ent->client->ps.saberCanThrow = qfalse;
+		ent->client->ps.forceRestricted = qtrue;
+		ent->client->ps.saberMove = LS_NONE;
+		ent->client->ps.saberBlocked = 0;
+		ent->client->ps.saberBlocking = 0;
+		ent->client->ps.saberHolstered = 2;
+		if (ent->client->saber[0].soundOff) {
+			G_Sound(ent, CHAN_AUTO, ent->client->saber[0].soundOff);
+		}
+		if (ent->client->saber[1].model[0] && ent->client->saber[1].soundOff) {
+			G_Sound(ent, CHAN_AUTO, ent->client->saber[1].soundOff);
+		}
+	}
+
+	ent->client->ps.forceHandExtend = handExtend;
+	ent->client->ps.forceHandExtendTime = emoteTime;
+	ent->client->ps.forceDodgeAnim = emote->animLoop;
+	ent->client->emote.nextAnim = emote->animLeave;
+	ent->client->emote.freeze = qtrue;
+
+	return qtrue;
+}
+
+static void RegularEmote(gentity_t *ent, const char *emoteName) {
+	const emote_t *emote = (emote_t *)bsearch(emoteName, emotes, numEmotes, sizeof(emote_t), emotecmp);
+	if (!emote) {
+		assert(!"Emote not found");
+		return;
+	}
+	SetEmote(ent, emote);
+}
+
+#define EMOTE( x ) static void Cmd_Emote_##x( gentity_t *ent ) { RegularEmote( ent, XSTRING(x) ); }
+EMOTE(aimgun)
+EMOTE(amhiltthrow1)
+EMOTE(amhiltthrow2)
+EMOTE(atease)
+EMOTE(beg)
+EMOTE(breakdance)
+EMOTE(breakdance2)
+EMOTE(cower)
+EMOTE(dance1)
+EMOTE(dance2)
+EMOTE(dance3)
+EMOTE(die)
+EMOTE(die2)
+EMOTE(fabulous)
+EMOTE(finishinghim)
+EMOTE(harlem)
+EMOTE(heal)
+EMOTE(hello)
+EMOTE(hips)
+EMOTE(kneel)
+EMOTE(kneel2)
+EMOTE(neo)
+EMOTE(nod)
+EMOTE(noisy)
+EMOTE(power)
+EMOTE(radio)
+EMOTE(shake)
+EMOTE(shovel)
+EMOTE(sit1)
+EMOTE(sit2)
+EMOTE(sit3)
+EMOTE(sit4)
+EMOTE(sit6)
+EMOTE(sleep)
+EMOTE(smack1)
+EMOTE(smack2)
+EMOTE(stand)
+EMOTE(stepback)
+EMOTE(suggest)
+EMOTE(victory)
+EMOTE(surrender)
+EMOTE(wait)
+EMOTE(won)
+
+static void Cmd_KnockMeDown(gentity_t *ent) {
+	G_Knockdown(ent);
+}
+
+static void Cmd_DropSaber(gentity_t *ent) {
+	if (!g_allowDropSaber.integer) {
+		trap_SendServerCommand(ent - g_entities, "print \"dropsaber is disabled\n\"");
+		return;
+	}
+	if (!ent->client->ps.saberEntityNum) {
+		return;
+	}
+
+	gentity_t *saber = &g_entities[ent->client->ps.saberEntityNum];
+	if (ent->client->ps.saberInFlight) {
+		// turn it off in midair
+		saberKnockDown(saber, ent, ent);
+		return;
+	}
+	const vec3_t *velocity = &vec3_origin;
+	if (g_allowDropSaber.integer == 2) {
+		velocity = &ent->client->ps.velocity;
+	}
+	saberKnockOutOfHand(saber, ent, velocity);
+}
+
+static void Cmd_Emote_hug(gentity_t *ent) {
+	static const emote_t emoteHugger = { "hugger", BOTH_HUGGER1, BOTH_HUGGERSTOP1, EMF_HOLSTER },
+		emoteHuggee = { "huggee", BOTH_HUGGEE1, BOTH_HUGGEESTOP1, EMF_HOLSTER };
+	trace_t *tr = G_RealTrace(ent, 40.0f);
+	if (tr->fraction < 1.0f && tr->entityNum < MAX_CLIENTS) {
+		gentity_t *other = g_entities + tr->entityNum;
+
+		/*if (Client_Disabled(other, CPD_ANNOYINGEMOTES)) {
+		return;
+		}*/
+
+		if (SetEmote(ent, &emoteHugger) && SetEmote(other, &emoteHuggee)) {
+			vec3_t entDir, otherDir, entAngles, otherAngles;
+
+			VectorSubtract(other->client->ps.origin, ent->client->ps.origin, otherDir);
+			VectorCopy(ent->client->ps.viewangles, entAngles);
+			entAngles[1] = vectoyaw(&otherDir);
+			SetClientViewAngle(ent, &entAngles);
+
+			VectorSubtract(ent->client->ps.origin, other->client->ps.origin, entDir);
+			VectorCopy(other->client->ps.viewangles, otherAngles);
+			otherAngles[1] = vectoyaw(&entDir);
+			SetClientViewAngle(other, &otherAngles);
+		}
+	}
+}
+
+/*static void Cmd_Emote_kiss(gentity_t *ent) {
+static const emote_t emoteKisser = { "kisser", BOTH_KISSER, BOTH_KISSER1STOP, EMF_STATIC | EMF_HOLSTER },
+emoteKissee = { "kissee", BOTH_KISSEE, MAX_ANIMATIONS, EMF_STATIC | EMF_HOLSTER };
+trace_t *tr = G_RealTrace(ent, 40.0f);
+if (tr->fraction < 1.0f && tr->entityNum < MAX_CLIENTS) {
+gentity_t *other = g_entities + tr->entityNum;
+
+if (Client_Disabled(other, CPD_ANNOYINGEMOTES)) {
+return;
+}
+
+vec3_t entDir, otherDir, entAngles, otherAngles;
+
+VectorSubtract(&other->client->ps.origin, &ent->client->ps.origin, &otherDir);
+VectorCopy(&ent->client->ps.viewangles, &entAngles);
+entAngles.yaw = vectoyaw(&otherDir);
+SetClientViewAngle(ent, &entAngles);
+SetEmote(ent, &emoteKisser);
+
+VectorSubtract(&ent->client->ps.origin, &other->client->ps.origin, &entDir);
+VectorCopy(&other->client->ps.viewangles, &otherAngles);
+otherAngles.yaw = vectoyaw(&entDir);
+SetClientViewAngle(other, &otherAngles);
+SetEmote(other, &emoteKissee);
+}
+}*/
+
+static void Cmd_Jetpack_f(gentity_t *ent) {
+	const gitem_t *item = BG_FindItemForHoldable(HI_JETPACK);
+
+	if (ent->client->ps.duelInProgress || !(g_allowJetpack.bits & (1 << g_gametype.integer))) {
+		return;
+	}
+
+	if (ent->client->jetPackOn) {
+		Jetpack_Off(ent);
+	}
+
+	ent->client->ps.stats[STAT_HOLDABLE_ITEMS] ^= (1 << item->giTag);
+}
+
+//[smU - Serverside - emotes - End]
+
+
 /*
 =================
 ClientCommand
@@ -4032,10 +4311,15 @@ void ClientCommand( int clientNum ) {
 	trap_Argv( 0, cmd, sizeof( cmd ) );
 
 	// smU client commands
-	if (Q_stricmp(cmd, "help") == 0) {
+	if (Q_stricmp(cmd, "about") == 0) {
 		Cmd_Aminfo_f(ent);
 		return;
 		
+	}
+
+	if (Q_stricmp(cmd, "listemotes") == 0) {
+		Cmd_ListEmotes_f(ent);
+		return;
 	}
 	
 		if (Q_stricmp(cmd, "admlogin") == 0) {
@@ -4043,6 +4327,8 @@ void ClientCommand( int clientNum ) {
 		return;
 		
 	}
+
+
 	
 		if (Q_stricmp(cmd, "admlogout") == 0) {
 		Cmd_Amlogout_f(ent);
@@ -4086,6 +4372,477 @@ void ClientCommand( int clientNum ) {
 		
 	}
 	
+		// emotes
+		if (Q_stricmp(cmd, "aimgun") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_aimgun(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "sleep") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_sleep(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "atease") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_atease(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "beg") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_beg(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "breakdance") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_breakdance(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "breakdance2") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_breakdance2(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "cower") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_cower(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "dance1") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_dance1(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "dance2") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_dance2(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "dance3") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_dance3(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "die") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_die(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "die2") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_die2(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "dropsaber") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_DropSaber(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "fabulous") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_fabulous(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "finishinghim") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_finishinghim(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "harlem") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_harlem(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "heal") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_heal(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "hello") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_hello(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "hiltthrow1") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_amhiltthrow1(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "hiltthrow2") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_amhiltthrow2(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "hips") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_hips(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "kneel") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_aimgun(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "kneel2") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_aimgun(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "knockmedown") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_KnockMeDown(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "noisy") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_noisy(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "power") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_power(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "neo") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_neo(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "nod") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_nod(ent);
+			return;
+		}
+
+
+		if (Q_stricmp(cmd, "radio") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_radio(ent);
+			return;
+		}
+
+		/*if (Q_stricmp(cmd, "admsay") == 0) {
+		if (level.intermissiontime)
+		{
+		trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+		return;
+		}
+		Cmd_SayAdmin_f(ent);
+		return;
+		}*/
+
+		if (Q_stricmp(cmd, "shake") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_shake(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "shovel") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_shovel(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "sit1") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_sit1(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "sit2") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_sit2(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "sit3") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_sit3(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "sit4") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_sit4(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "sit6") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_sit6(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "smack1") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_smack1(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "smack2") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_smack2(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "stand") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_stand(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "stepback") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_stepback(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "suggest") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_suggest(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "surrender") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_surrender(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "victory") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_victory(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "emwait") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_wait(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "emwon") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Emote_won(ent);
+			return;
+		}
+
+		if (Q_stricmp(cmd, "getjetpack") == 0) {
+			if (level.intermissiontime)
+			{
+				trap_SendServerCommand(clientNum, va("print \"You cannot perform this task (%s) during the intermission.\n\"", cmd));
+				return;
+			}
+			Cmd_Jetpack_f(ent);
+			return;
+		}
 
 	//rww - redirect bot commands
 	if (strstr(cmd, "bot_") && AcceptBotCommand(cmd, ent))

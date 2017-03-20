@@ -346,6 +346,12 @@ static float LittleFloat (const float *l) { return FloatSwap(l); }
 
 //=============================================================
 
+// helpers
+#define ARRAY_LEN( x )		( sizeof( x ) / sizeof( *(x) ) )
+#define STRING( a )			#a
+#define XSTRING( a )		STRING( a )
+//#define VALIDSTRING( a )	( ( a != nullptr ) && ( a[0] != '\0' ) )
+
 typedef unsigned char 		byte;
 typedef unsigned short		word;
 typedef unsigned long		ulong;
@@ -1825,7 +1831,11 @@ typedef struct {
 	cvarHandle_t	handle;
 	int			modificationCount;
 	float		value;
-	int			integer;
+	//int			integer;
+	union {
+		int		integer;
+		unsigned int		bits;
+	};
 	char		string[MAX_CVAR_VALUE_STRING];
 } vmCvar_t;
 

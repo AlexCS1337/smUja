@@ -237,6 +237,11 @@ vmCvar_t g_centerMOTD;
 //vmCvar_t	g_flipKick;
 vmCvar_t	g_movementStyle;
 
+// smU - emotes
+vmCvar_t	g_allowEmotes;
+vmCvar_t	g_allowDropSaber;
+vmCvar_t	g_allowJetpack;
+
 //smU ADMIN
 vmCvar_t	g_juniorAdminLevel;
 vmCvar_t	g_fullAdminLevel;
@@ -522,6 +527,12 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_consoleMOTD, "g_consoleMOTD", "", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_centerMOTDTime, "g_centerMOTDTime", "5", CVAR_ARCHIVE, 0, qfalse},
 	{ &g_centerMOTD, "g_centerMOTD", "", CVAR_ARCHIVE, 0, qfalse },
+
+		// smU - emotes
+
+	{ &g_allowEmotes, "g_allowEmotes", "1", CVAR_ARCHIVE, 0, qtrue },
+	{ &g_allowDropSaber, "g_allowDropSaber", "0", CVAR_ARCHIVE, 0, qtrue },
+	{ &g_allowJetpack, "g_allowJetpack", "0",CVAR_ARCHIVE, 0, qtrue },
 
 		//smU ADMIN
 	{ &g_juniorAdminLevel, "g_juniorAdminLevel", "0", CVAR_ARCHIVE, 0, qfalse },

@@ -189,7 +189,12 @@ E_ALL
 
 //[smU - Serverside - All - Jcinfo bitvalues
 //#define smU_CINFO_FLIPKICK	(1<<0) //Allow player flipkicking (normal style)
-#define JAPRO_CINFO_FIXSIDEKICK	(1<<6) //allow flipkick with slow sidekick style
+//#define JAPRO_CINFO_FIXSIDEKICK	(1<<6) //allow flipkick with slow sidekick style
+
+#define EMF_NONE						(0x00u)
+#define EMF_STATIC						(0x01u) // hold animation on torso + legs, don't allow movement
+#define EMF_HOLD						(0x02u) // hold animation on torso
+#define EMF_HOLSTER						(0x04u) // forcibly deactivate saber
 
 
 
@@ -493,7 +498,7 @@ typedef struct {
 	qboolean	sawMOTD; // smU, has the client been shown the MOTD?
 
 	qboolean	raceMode;
-	//int			movementStyle;
+	int			movementStyle;
 
 	qboolean	juniorAdmin;
 	qboolean	fullAdmin;
@@ -660,6 +665,14 @@ typedef struct renderInfo_s
 
 	int			boltValidityTime;
 } renderInfo_t;
+
+typedef struct emote_s {
+	const char *name;
+	animNumber_t animLoop, animLeave;
+	unsigned int flags;
+	qboolean            freeze;
+	animNumber_t        nextAnim;
+} emote_t;
 
 // this structure is cleared on each ClientSpawn(),
 // except for 'client->pers' and 'client->sess'
@@ -874,6 +887,8 @@ struct gclient_s {
 
 	int			lastGenCmd;
 	int			lastGenCmdTime;
+
+	emote_t emote;
 	
 	//can't put these in playerstate, crashes game (need to change exe?)
 	int			otherKillerMOD;
@@ -1484,6 +1499,11 @@ extern vmCvar_t g_allowBlackNames;
 extern vmCvar_t g_consoleMOTD;
 extern vmCvar_t g_centerMOTDTime;
 extern vmCvar_t g_centerMOTD;
+
+// smU - emotes
+extern vmCvar_t	g_allowEmotes;
+extern vmCvar_t	g_allowDropSaber;
+extern vmCvar_t	g_allowJetpack;
 
 //smU ADMIN
 extern	vmCvar_t	g_juniorAdminLevel;
