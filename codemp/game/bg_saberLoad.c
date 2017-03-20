@@ -713,6 +713,843 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 			SkipRestOfLine( &p );
 			continue;
 		}
+
+		//===ABOVE THIS, ALL VALUES ARE GLOBAL TO THE SABER========================================================
+		//bladeStyle2Start - where to start using the second set of blade data
+		if (!Q_stricmp(token, "bladeStyle2Start"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			saber->bladeStyle2Start = n;
+			continue;
+		}
+		//===BLADE-SPECIFIC FIELDS=================================================================================
+
+		//===PRIMARY BLADE====================================
+		//stops the saber from drawing marks on the world (good for real-sword type mods)
+		if (!Q_stricmp(token, "noWallMarks"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_NO_WALL_MARKS;
+			}
+			continue;
+		}
+
+		//stops the saber from drawing a dynamic light (good for real-sword type mods)
+		if (!Q_stricmp(token, "noDlight"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_NO_DLIGHT;
+			}
+			continue;
+		}
+
+		//stops the saber from drawing a blade (good for real-sword type mods)
+		if (!Q_stricmp(token, "noBlade"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_NO_BLADE;
+			}
+			continue;
+		}
+
+		//default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
+		if (!Q_stricmp(token, "trailStyle"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			saber->trailStyle = n;
+			continue;
+		}
+
+		//if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
+		if (!Q_stricmp(token, "g2MarksShader"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+#ifdef QAGAME//cgame-only cares about this
+			SkipRestOfLine(&p);
+#elif defined CGAME
+			saber->g2MarksShader = trap_R_RegisterShader(value);
+#else
+			SkipRestOfLine(&p);
+#endif
+			continue;
+		}
+
+		//if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
+		if (!Q_stricmp(token, "g2WeaponMarkShader"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+#ifdef QAGAME//cgame-only cares about this
+			SkipRestOfLine(&p);
+#elif defined CGAME
+			saber->g2WeaponMarkShader = trap_R_RegisterShader(value);
+#else
+			SkipRestOfLine(&p);
+#endif
+			continue;
+		}
+
+		//if non-zero, uses damage done to calculate an appropriate amount of knockback
+		if (!Q_stricmp(token, "knockbackScale"))
+		{
+			if (COM_ParseFloat(&p, &f))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			saber->knockbackScale = f;
+			continue;
+		}
+
+		//scale up or down the damage done by the saber
+		if (!Q_stricmp(token, "damageScale"))
+		{
+			if (COM_ParseFloat(&p, &f))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			saber->damageScale = f;
+			continue;
+		}
+
+		//if non-zero, the saber never does dismemberment (good for pointed/blunt melee weapons)
+		if (!Q_stricmp(token, "noDismemberment"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_NO_DISMEMBERMENT;
+			}
+			continue;
+		}
+
+		//if non-zero, the saber will not do damage or any effects when it is idle (not in an attack anim).  (good for real-sword type mods)
+		if (!Q_stricmp(token, "noIdleEffect"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_NO_IDLE_EFFECT;
+			}
+			continue;
+		}
+
+		//if set, the blades will always be blocking (good for things like shields that should always block)
+		if (!Q_stricmp(token, "alwaysBlock"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_ALWAYS_BLOCK;
+			}
+			continue;
+		}
+
+		//if set, the blades cannot manually be toggled on and off
+		if (!Q_stricmp(token, "noManualDeactivate"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_NO_MANUAL_DEACTIVATE;
+			}
+			continue;
+		}
+
+		//if set, the blade does damage in start, transition and return anims (like strong style does)
+		if (!Q_stricmp(token, "transitionDamage"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_TRANSITION_DAMAGE;
+			}
+			continue;
+		}
+
+		//splashRadius - radius of splashDamage
+		if (!Q_stricmp(token, "splashRadius"))
+		{
+			if (COM_ParseFloat(&p, &f))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			saber->splashRadius = f;
+			continue;
+		}
+
+		//splashDamage - amount of splashDamage, 100% at a distance of 0, 0% at a distance = splashRadius
+		if (!Q_stricmp(token, "splashDamage"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			saber->splashDamage = n;
+			continue;
+		}
+
+		//splashKnockback - amount of splashKnockback, 100% at a distance of 0, 0% at a distance = splashRadius
+		if (!Q_stricmp(token, "splashKnockback"))
+		{
+			if (COM_ParseFloat(&p, &f))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			saber->splashKnockback = f;
+			continue;
+		}
+
+		//hit sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "hitSound1"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->hitSound[0] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//hit sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "hitSound2"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->hitSound[1] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//hit sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "hitSound3"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->hitSound[2] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//block sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "blockSound1"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->blockSound[0] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//block sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "blockSound2"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->blockSound[1] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//block sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "blockSound3"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->blockSound[2] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//bounce sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "bounceSound1"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->bounceSound[0] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//bounce sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "bounceSound2"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->bounceSound[1] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//bounce sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "bounceSound3"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->bounceSound[2] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//block effect - when saber/sword hits another saber/sword
+		if (!Q_stricmp(token, "blockEffect"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+#ifdef QAGAME//cgame-only cares about this
+			SkipRestOfLine(&p);
+#elif defined CGAME
+			saber->blockEffect = trap_FX_RegisterEffect((char *)value);
+#else
+			SkipRestOfLine(&p);
+#endif
+			continue;
+		}
+
+		//hit person effect - when saber/sword hits a person
+		if (!Q_stricmp(token, "hitPersonEffect"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+#ifdef QAGAME//cgame-only cares about this
+			SkipRestOfLine(&p);
+#elif defined CGAME
+			saber->hitPersonEffect = trap_FX_RegisterEffect((char *)value);
+#else
+			SkipRestOfLine(&p);
+#endif
+			continue;
+		}
+
+		//hit other effect - when saber/sword hits sopmething else damagable
+		if (!Q_stricmp(token, "hitOtherEffect"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+#ifdef QAGAME//cgame-only cares about this
+			SkipRestOfLine(&p);
+#elif defined CGAME
+			saber->hitOtherEffect = trap_FX_RegisterEffect((char *)value);
+#else
+			SkipRestOfLine(&p);
+#endif
+			continue;
+		}
+
+		//blade effect
+		if (!Q_stricmp(token, "bladeEffect"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+#ifdef QAGAME//cgame-only cares about this
+			SkipRestOfLine(&p);
+#elif defined CGAME
+			saber->bladeEffect = trap_FX_RegisterEffect((char *)value);
+#else
+			SkipRestOfLine(&p);
+#endif
+			continue;
+		}
+
+		//if non-zero, the saber will not do the big, white clash flare with other sabers
+		if (!Q_stricmp(token, "noClashFlare"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_NO_CLASH_FLARE;
+			}
+			continue;
+		}
+
+		//===SECONDARY BLADE====================================
+		//stops the saber from drawing marks on the world (good for real-sword type mods)
+		if (!Q_stricmp(token, "noWallMarks2"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_NO_WALL_MARKS2;
+			}
+			continue;
+		}
+
+		//stops the saber from drawing a dynamic light (good for real-sword type mods)
+		if (!Q_stricmp(token, "noDlight2"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_NO_DLIGHT2;
+			}
+			continue;
+		}
+
+		//stops the saber from drawing a blade (good for real-sword type mods)
+		if (!Q_stricmp(token, "noBlade2"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_NO_BLADE2;
+			}
+			continue;
+		}
+
+		//default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
+		if (!Q_stricmp(token, "trailStyle2"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			saber->trailStyle2 = n;
+			continue;
+		}
+
+		//if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
+		if (!Q_stricmp(token, "g2MarksShader2"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+#ifdef QAGAME//cgame-only cares about this
+			SkipRestOfLine(&p);
+#elif defined CGAME
+			saber->g2MarksShader2 = trap_R_RegisterShader(value);
+#else
+			SkipRestOfLine(&p);
+#endif
+			continue;
+		}
+
+		//if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
+		if (!Q_stricmp(token, "g2WeaponMarkShader2"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+#ifdef QAGAME//cgame-only cares about this
+			SkipRestOfLine(&p);
+#elif defined CGAME
+			saber->g2WeaponMarkShader2 = trap_R_RegisterShader(value);
+#else
+			SkipRestOfLine(&p);
+#endif
+			continue;
+		}
+
+		//if non-zero, uses damage done to calculate an appropriate amount of knockback
+		if (!Q_stricmp(token, "knockbackScale2"))
+		{
+			if (COM_ParseFloat(&p, &f))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			saber->knockbackScale2 = f;
+			continue;
+		}
+
+		//scale up or down the damage done by the saber
+		if (!Q_stricmp(token, "damageScale2"))
+		{
+			if (COM_ParseFloat(&p, &f))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			saber->damageScale2 = f;
+			continue;
+		}
+
+		//if non-zero, the saber never does dismemberment (good for pointed/blunt melee weapons)
+		if (!Q_stricmp(token, "noDismemberment2"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_NO_DISMEMBERMENT2;
+			}
+			continue;
+		}
+
+		//if non-zero, the saber will not do damage or any effects when it is idle (not in an attack anim).  (good for real-sword type mods)
+		if (!Q_stricmp(token, "noIdleEffect2"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_NO_IDLE_EFFECT2;
+			}
+			continue;
+		}
+
+		//if set, the blades will always be blocking (good for things like shields that should always block)
+		if (!Q_stricmp(token, "alwaysBlock2"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_ALWAYS_BLOCK2;
+			}
+			continue;
+		}
+
+		//if set, the blades cannot manually be toggled on and off
+		if (!Q_stricmp(token, "noManualDeactivate2"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_NO_MANUAL_DEACTIVATE2;
+			}
+			continue;
+		}
+
+		//if set, the blade does damage in start, transition and return anims (like strong style does)
+		if (!Q_stricmp(token, "transitionDamage2"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_TRANSITION_DAMAGE2;
+			}
+			continue;
+		}
+
+		//splashRadius - radius of splashDamage
+		if (!Q_stricmp(token, "splashRadius2"))
+		{
+			if (COM_ParseFloat(&p, &f))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			saber->splashRadius2 = f;
+			continue;
+		}
+
+		//splashDamage - amount of splashDamage, 100% at a distance of 0, 0% at a distance = splashRadius
+		if (!Q_stricmp(token, "splashDamage2"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			saber->splashDamage2 = n;
+			continue;
+		}
+
+		//splashKnockback - amount of splashKnockback, 100% at a distance of 0, 0% at a distance = splashRadius
+		if (!Q_stricmp(token, "splashKnockback2"))
+		{
+			if (COM_ParseFloat(&p, &f))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			saber->splashKnockback2 = f;
+			continue;
+		}
+
+		//hit sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "hit2Sound1"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->hit2Sound[0] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//hit sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "hit2Sound2"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->hit2Sound[1] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//hit sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "hit2Sound3"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->hit2Sound[2] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//block sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "block2Sound1"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->block2Sound[0] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//block sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "block2Sound2"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->block2Sound[1] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//block sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "block2Sound3"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->block2Sound[2] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//bounce sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "bounce2Sound1"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->bounce2Sound[0] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//bounce sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "bounce2Sound2"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->bounce2Sound[1] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//bounce sound - NOTE: must provide all 3!!!
+		if (!Q_stricmp(token, "bounce2Sound3"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+			saber->bounce2Sound[2] = BG_SoundIndex((char *)value);
+			continue;
+		}
+
+		//block effect - when saber/sword hits another saber/sword
+		if (!Q_stricmp(token, "blockEffect2"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+#ifdef QAGAME//cgame-only cares about this
+			SkipRestOfLine(&p);
+#elif defined CGAME
+			saber->blockEffect2 = trap_FX_RegisterEffect((char *)value);
+#else
+			SkipRestOfLine(&p);
+#endif
+			continue;
+		}
+
+		//hit person effect - when saber/sword hits a person
+		if (!Q_stricmp(token, "hitPersonEffect2"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+#ifdef QAGAME//cgame-only cares about this
+			SkipRestOfLine(&p);
+#elif defined CGAME
+			saber->hitPersonEffect2 = trap_FX_RegisterEffect((char *)value);
+#else
+			SkipRestOfLine(&p);
+#endif
+			continue;
+		}
+
+		//hit other effect - when saber/sword hits sopmething else damagable
+		if (!Q_stricmp(token, "hitOtherEffect2"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+#ifdef QAGAME//cgame-only cares about this
+			SkipRestOfLine(&p);
+#elif defined CGAME
+			saber->hitOtherEffect2 = trap_FX_RegisterEffect((char *)value);
+#else
+			SkipRestOfLine(&p);
+#endif
+			continue;
+		}
+
+		//blade effect
+		if (!Q_stricmp(token, "bladeEffect2"))
+		{
+			if (COM_ParseString(&p, &value))
+			{
+				continue;
+			}
+#ifdef QAGAME//cgame-only cares about this
+			SkipRestOfLine(&p);
+#elif defined CGAME
+			saber->bladeEffect2 = trap_FX_RegisterEffect((char *)value);
+#else
+			SkipRestOfLine(&p);
+#endif
+			continue;
+		}
+
+		//if non-zero, the saber will not do the big, white clash flare with other sabers
+		if (!Q_stricmp(token, "noClashFlare2"))
+		{
+			if (COM_ParseInt(&p, &n))
+			{
+				SkipRestOfLine(&p);
+				continue;
+			}
+			if (n)
+			{
+				saber->saberFlags2 |= SFL2_NO_CLASH_FLARE2;
+			}
+			continue;
+		}
+		//===END BLADE-SPECIFIC FIELDS=============================================================================
 		//FIXME: saber sounds (on, off, loop)
 
 #ifdef _DEBUG
@@ -725,7 +1562,6 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 
 	return qtrue;
 }
-
 qboolean WP_SaberParseParm( const char *saberName, const char *parmname, char *saberData ) 
 {
 	const char	*token;

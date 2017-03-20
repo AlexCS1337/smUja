@@ -6187,6 +6187,18 @@ JustDoIt:
 		return;
 	}
 
+
+	// old noblade code
+	if ((client->saber[saberNum].saberFlags2&SFL2_NO_BLADE))
+	{//don't actually draw the blade at all
+		if (client->saber[saberNum].numBlades < 3
+			&& !(client->saber[saberNum].saberFlags2&SFL2_NO_DLIGHT))
+		{//hmm, but still add the dlight
+			CG_DoSaberLight(&client->saber[saberNum]);
+		}
+		return;
+	}
+
 	// Pass in the renderfx flags attached to the saber weapon model...this is done so that saber glows
 	//	will get rendered properly in a mirror...not sure if this is necessary??
 	//CG_DoSaber( org_, axis_[0], saberLen, client->saber[saberNum].blade[bladeNum].lengthMax, client->saber[saberNum].blade[bladeNum].radius,

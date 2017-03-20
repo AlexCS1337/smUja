@@ -1595,9 +1595,9 @@ extern vmCvar_t g_centerMOTD;
 extern vmCvar_t g_playerLog;
 
 // smU - emotes
-vmCvar_t	g_allowEmotes;
-vmCvar_t	g_allowDropSaber;
-vmCvar_t	g_allowJetpack;
+extern vmCvar_t	g_allowEmotes;
+extern vmCvar_t	g_allowDropSaber;
+extern vmCvar_t	g_allowJetpack;
 
 //smU ADMIN
 extern	vmCvar_t	g_juniorAdminLevel;
