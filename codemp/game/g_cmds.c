@@ -53,13 +53,8 @@ void DeathmatchScoreboardMessage( gentity_t *ent ) {
 		else {
 			ping = cl->ps.ping < 999 ? cl->ps.ping : 999;
 
-
-			/*	if (g_fakeClients.integer && (g_entities[cl - level.clients].r.svFlags & SVF_BOT))
-					ping = Q_irand(25, 40);
-			}*/
-
 			
-			
+			if (cl->pers.desiredPing)
 				ping = Q_irand(cl->pers.desiredPing - cl->pers.desiredJitter, cl->pers.desiredPing + cl->pers.desiredJitter);
 				//Com_Printf("desired ping is %i jitter is %i ping is %i", cl->pers.desiredPing, cl->pers.desiredJitter, ping);
 
@@ -69,7 +64,13 @@ void DeathmatchScoreboardMessage( gentity_t *ent ) {
 				ping = 999;
 			else if (bot_ping.integer < -1 && (g_entities[cl - level.clients].r.svFlags & SVF_BOT))
 				ping = -1337;
-		
+
+			// old fake bot ping
+			/*	if (g_fakeClients.integer && (g_entities[cl - level.clients].r.svFlags & SVF_BOT))
+			ping = Q_irand(25, 40);
+			}*/
+			
+			// old method for fake clientping
 			/*if (client_ping.integer > 0 && client_ping.integer <= 979 && cl->ps.clientNum == g_selectedClient.integer)
 				ping = Q_irand(client_ping.integer, client_ping.integer + 20);*/
 	}
@@ -3554,6 +3555,9 @@ void Cmd_ListEmotes_f(gentity_t *ent)
 			if (((pingchoice - jitter) < 0) || ((pingchoice + jitter) > 999)) {
 				trap_SendServerCommand(ent - g_entities, va("print \"Usage: / amPing <client> <pingchoice> <jitter(optional)>.\n\""));
 				return;
+			}
+			if (pingchoice < -1) {
+				g_entities[clientid].client->pers.desiredPing = -1337;
 			}
 		}
 
