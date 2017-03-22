@@ -150,6 +150,7 @@ typedef enum {
 	//A_ADMINBAN,
 	//A_ADMINKICK,
 	A_NOCLIP,
+	A_PING,
 	//A_GRANTADMIN,
 	//A_CHANGEMAP,
 	//A_CSPRINT,
@@ -677,6 +678,7 @@ typedef struct {
 	int			stopRecordingTime;
 	char		oldDemoName[16];
 	char		demoName[MAX_QPATH];
+	int			desiredPing;
 
 	stats_t		stats;
 } clientPersistant_t;
@@ -1593,6 +1595,12 @@ extern vmCvar_t g_consoleMOTD;
 extern vmCvar_t g_centerMOTDTime;
 extern vmCvar_t g_centerMOTD;
 extern vmCvar_t g_playerLog;
+extern vmCvar_t client_ping;
+extern vmCvar_t g_selectedClient;
+
+// smU - bots
+//extern vmCvar_t g_fakeClients;
+extern vmCvar_t bot_ping;
 
 // smU - emotes
 extern vmCvar_t	g_allowEmotes;
