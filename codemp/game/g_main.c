@@ -237,11 +237,9 @@ vmCvar_t	g_consoleMOTD;
 vmCvar_t	g_centerMOTDTime;
 vmCvar_t	g_centerMOTD;
 vmCvar_t	g_playerLog;
-vmCvar_t	client_ping;
-vmCvar_t	g_selectedClient;
+//vmCvar_t	g_fakeClients;
 
 // smU - bots
-//vmCvar_t	g_fakeClients;
 vmCvar_t	bot_ping;
 
 //smU ADMIN
@@ -530,8 +528,8 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_centerMOTDTime, "g_centerMOTDTime", "5", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_centerMOTD, "g_centerMOTD", "", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_playerLog, "g_playerLog", "0", CVAR_ARCHIVE, 0, qtrue },
-	{ &client_ping, "client_ping", "0", CVAR_ARCHIVE, 0, qfalse },
-	{ &g_selectedClient, "g_selectedClient", "0", CVAR_ARCHIVE, 0, qfalse },
+	//{ &client_ping, "client_ping", "0", CVAR_ARCHIVE, 0, qfalse },
+	//{ &g_selectedClient, "g_selectedClient", "0", CVAR_ARCHIVE, 0, qfalse },
 	
 	// smU - bots
 	//{ &g_fakeClients, "g_fakeClients", "0", CVAR_ARCHIVE, 0, qfalse},

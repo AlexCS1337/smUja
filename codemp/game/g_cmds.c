@@ -57,17 +57,21 @@ void DeathmatchScoreboardMessage( gentity_t *ent ) {
 			/*	if (g_fakeClients.integer && (g_entities[cl - level.clients].r.svFlags & SVF_BOT))
 					ping = Q_irand(25, 40);
 			}*/
+
+			
+			
+				ping = Q_irand(cl->pers.desiredPing - cl->pers.desiredJitter, cl->pers.desiredPing + cl->pers.desiredJitter);
+				//Com_Printf("desired ping is %i jitter is %i ping is %i", cl->pers.desiredPing, cl->pers.desiredJitter, ping);
+
 			if (bot_ping.integer > 0 && bot_ping.integer <= 979 && (g_entities[cl - level.clients].r.svFlags & SVF_BOT))
 				ping = Q_irand(bot_ping.integer, bot_ping.integer + 20);
 			else if (bot_ping.integer == 999 && (g_entities[cl - level.clients].r.svFlags & SVF_BOT))
 				ping = 999;
-			else if (bot_ping.integer < -2 && (g_entities[cl - level.clients].r.svFlags & SVF_BOT))
+			else if (bot_ping.integer < -1 && (g_entities[cl - level.clients].r.svFlags & SVF_BOT))
 				ping = -1337;
 		
-
-			if (client_ping.integer > 0 && client_ping.integer <= 979 && cl->ps.clientNum == g_selectedClient.integer)
-				ping = Q_irand(client_ping.integer, client_ping.integer + 20);
-			//cl->pers.desiredPing = Q_irand(client_ping.integer, client_ping.integer + 20);
+			/*if (client_ping.integer > 0 && client_ping.integer <= 979 && cl->ps.clientNum == g_selectedClient.integer)
+				ping = Q_irand(client_ping.integer, client_ping.integer + 20);*/
 	}
 
 		if( cl->accuracy_shots ) {
@@ -3488,63 +3492,76 @@ void Cmd_ListEmotes_f(gentity_t *ent)
 
 // [smoo - smU - Serverside - amPing - Start] (WIP)
 
-void Cmd_Amping_f(gentity_t *ent)
-{
-	gentity_t * targetplayer;
-	int i;
-	int clientid = -1;
-	char   arg[MAX_NETNAME];
-
-	/*if (!CheckAdminCmd(ent, A_PING, "amPing"))
-		return;*/
-	if (ent->client->sess.fullAdmin)
+	void Cmd_Amping_f(gentity_t *ent)
 	{
-		if (!(g_fullAdminLevel.integer & (1 << A_PING)))
+		gentity_t * targetplayer;
+		int i;
+		int clientid = -1;
+		int pingchoice;
+		char   arg[MAX_NETNAME];
+		int jitter = 20; //Default
+
+						 /*if (!CheckAdminCmd(ent, A_PING, "amPing"))
+						 return;*/
+		if (ent->client->sess.fullAdmin)
 		{
-			trap_SendServerCommand(ent - g_entities, va("print \"You are not authorized to use this command on this player (amPing)\n\""));
-			return;
+			if (!(g_fullAdminLevel.integer & (1 << A_PING)))
+			{
+				trap_SendServerCommand(ent - g_entities, va("print \"You are not authorized to use this command on this player (amPing)\n\""));
+				return;
+			}
 		}
-	}
 
-	if (ent->client->sess.juniorAdmin)
-	{
-		if (!(g_juniorAdminLevel.integer & (1 << A_PING)))
+		else if (ent->client->sess.juniorAdmin)
 		{
-			trap_SendServerCommand(ent - g_entities, va("print \"You are not authorized to use this command on this player (amPing)\n\""));
-			return;
+			if (!(g_juniorAdminLevel.integer & (1 << A_PING)))
+			{
+				trap_SendServerCommand(ent - g_entities, va("print \"You are not authorized to use this command on this player (amPing)\n\""));
+				return;
+			}
 		}
-	}
 
-
-	if (trap_Argc() != 2)
-	{
-		trap_SendServerCommand(ent - g_entities, va("print \"Usage: / amPing <client>.\n\""));
-		return;
-	}
-
-	trap_Argv(1, arg, sizeof(arg));
-
-
-	clientid = JP_ClientNumberFromString(ent, arg);
-
-
-	if (clientid == -1 || clientid == -2)
-	{
-		return;
-	}
-
-	/*if (g_entities[clientid].client && (g_entities[clientid].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin))
-	{
-		if (g_entities[clientid].client->ps.clientNum != ent->client->ps.clientNum)
-			return;
 		else
-			trap_SendServerCommand(ent - g_entities, va("print \"You are not authorized to use this command on this player(amPing)\n\""));
-	}*/
+		{
+			trap_SendServerCommand(ent - g_entities, "print \"You must be logged in to use this command (amPing).\n\"");
+			return;
+		}
+
+		if (trap_Argc() != 2 && trap_Argc() != 3 && trap_Argc() != 4) {
+			trap_SendServerCommand(ent - g_entities, va("print \"Usage: / amPing <client> <pingchoice> <jitter(optional)>.\n\""));
+			return;
+		}
+
+		trap_Argv(1, arg, sizeof(arg));
+		clientid = JP_ClientNumberFromString(ent, arg);
+
+		if (clientid == -1 || clientid == -2)
+			return;
+
+		if (trap_Argc() == 2) { //If just /amping <client> turn it off
+			pingchoice = 0;
+			jitter = 0;
+		}
+		else {
+			trap_Argv(2, arg, sizeof(arg));
+			pingchoice = atoi(arg);
+
+			if (trap_Argc() == 4) {
+				trap_Argv(3, arg, sizeof(arg));
+				jitter = atoi(arg);
+			}
+
+			if (((pingchoice - jitter) < 0) || ((pingchoice + jitter) > 999)) {
+				trap_SendServerCommand(ent - g_entities, va("print \"Usage: / amPing <client> <pingchoice> <jitter(optional)>.\n\""));
+				return;
+			}
+		}
+
+		g_entities[clientid].client->pers.desiredPing = pingchoice;
+		g_entities[clientid].client->pers.desiredJitter = jitter;
 
 
-	g_entities[clientid].client->pers.desiredPing = 999;
-
-}
+	}
 
 // [smoo - smU - Serverside - amPing - End]
 
@@ -4416,10 +4433,10 @@ void ClientCommand( int clientNum ) {
 		return;
 	}
 
-	/*if (Q_stricmp(cmd, "amping") == 0) {
+	if (Q_stricmp(cmd, "amping") == 0) {
 		Cmd_Amping_f(ent);
 		return;
-	}*/
+	}
 
 	if (Q_stricmp(cmd, "listemotes") == 0) {
 		Cmd_ListEmotes_f(ent);

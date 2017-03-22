@@ -679,6 +679,7 @@ typedef struct {
 	char		oldDemoName[16];
 	char		demoName[MAX_QPATH];
 	int			desiredPing;
+	int			desiredJitter;
 
 	stats_t		stats;
 } clientPersistant_t;
@@ -1595,11 +1596,9 @@ extern vmCvar_t g_consoleMOTD;
 extern vmCvar_t g_centerMOTDTime;
 extern vmCvar_t g_centerMOTD;
 extern vmCvar_t g_playerLog;
-extern vmCvar_t client_ping;
-extern vmCvar_t g_selectedClient;
+//extern vmCvar_t g_fakeClients;
 
 // smU - bots
-//extern vmCvar_t g_fakeClients;
 extern vmCvar_t bot_ping;
 
 // smU - emotes
