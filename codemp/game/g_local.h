@@ -141,6 +141,7 @@ typedef enum {
 	//A_ADMINBAN,
 	//A_ADMINKICK,
 	A_NOCLIP,
+	A_PING,
 	//A_GRANTADMIN,
 	//A_CHANGEMAP,
 	//A_CSPRINT,
@@ -590,6 +591,8 @@ typedef struct {
 	int			stopRecordingTime;
 	char		oldDemoName[16];
 	char		demoName[MAX_QPATH];
+	int			desiredPing;
+	int			desiredJitter;
 } clientPersistant_t;
 
 typedef struct renderInfo_s
@@ -1499,6 +1502,9 @@ extern vmCvar_t g_allowBlackNames;
 extern vmCvar_t g_consoleMOTD;
 extern vmCvar_t g_centerMOTDTime;
 extern vmCvar_t g_centerMOTD;
+
+// smU - bots
+extern vmCvar_t bot_ping;
 
 // smU - emotes
 extern vmCvar_t	g_allowEmotes;

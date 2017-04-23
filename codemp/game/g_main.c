@@ -233,6 +233,9 @@ vmCvar_t g_consoleMOTD;
 vmCvar_t g_centerMOTDTime;
 vmCvar_t g_centerMOTD;
 
+//smU - bots
+vmCvar_t	bot_ping;
+
 // smU - Movement
 //vmCvar_t	g_flipKick;
 vmCvar_t	g_movementStyle;
@@ -527,6 +530,9 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_consoleMOTD, "g_consoleMOTD", "", CVAR_ARCHIVE, 0, qfalse },
 	{ &g_centerMOTDTime, "g_centerMOTDTime", "5", CVAR_ARCHIVE, 0, qfalse},
 	{ &g_centerMOTD, "g_centerMOTD", "", CVAR_ARCHIVE, 0, qfalse },
+
+	// smU - bots
+	{ &bot_ping, "bot_ping", "0", CVAR_ARCHIVE, 0, qfalse },
 
 		// smU - emotes
 

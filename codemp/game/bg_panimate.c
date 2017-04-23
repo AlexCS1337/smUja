@@ -2665,7 +2665,7 @@ void BG_StartTorsoAnim( playerState_t *ps, int anim )
 {
 	if ( ps->pm_type >= PM_DEAD )
 	{
-		assert(!BG_InDeathAnim(anim));
+		//assert(!BG_InDeathAnim(anim));
 		//please let me know if this assert fires on you (ideally before you close/ignore it) -rww
 		return;
 	}
