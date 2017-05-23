@@ -746,6 +746,14 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 					continue;
 				}
 
+				// if scanning for cgame, ui or jampgame and we are in 1.00 mode ignore assets3.pk3
+				if (MV_GetCurrentGameversion() == VERSION_1_00 &&
+					(!Q_stricmp(filename, "cgame.qvm") || !Q_stricmp(filename, "ui.qvm") || !Q_stricmp(filename, "jampgame.qvm")
+						|| !Q_stricmp(filename, "cgamex86.dll") || !Q_stricmp(filename, "uix86.dll") || !Q_stricmp(filename, "jampgamex86.dll")) &&
+						(!Q_stricmp(search->pack->pakBasename, "assets3"))) {
+					continue;
+				}
+
 				// look through all the pak file elements
 				pak = search->pack;
 				pakFile = pak->hashTable[hash];

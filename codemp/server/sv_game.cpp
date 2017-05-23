@@ -456,6 +456,8 @@ siegePers_t sv_siegePersData = {qfalse, 0, 0};
 qhandle_t RE_RegisterServerSkin( const char *name );
 extern float g_svCullDist;
 int SV_GameSystemCalls( int *args ) {
+	// fix syscalls from 1.00 to match 1.01
+	if (MV_GetCurrentGameversion() == VERSION_1_00 && args[0] >= G_G2_COLLISIONDETECTCACHE) args[0]++;
 	switch( args[0] ) {
 
 	//rww - alright, DO NOT EVER add a GAME/CGAME/UI generic call without adding a trap to match, and

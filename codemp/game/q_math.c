@@ -123,6 +123,8 @@ vec3_t	bytedirs[NUMVERTEXNORMALS] =
 
 //==============================================================
 
+#define QRAND_MAX 32768
+
 int		Q_rand( int *seed ) {
 	*seed = (69069 * *seed + 1);
 	return *seed;
@@ -1459,7 +1461,7 @@ int irand(int min, int max)
 {
 	int		result;
 
-	assert((max - min) < 32768);
+	assert((max - min) < QRAND_MAX);
 
 	max++;
 	holdrand = (holdrand * 214013L) + 2531011L;

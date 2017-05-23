@@ -1096,6 +1096,10 @@ inline int Round(float value)
 	return((int)floorf(value + 0.5f));
 }
 
+void MV_SetCurrentGameversion(mvversion_t version);
+mvversion_t MV_GetCurrentGameversion();
+mvprotocol_t MV_GetCurrentProtocol();
+
 #ifdef _XBOX
 //////////////////////////////
 //

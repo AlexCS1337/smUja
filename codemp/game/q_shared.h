@@ -3191,6 +3191,19 @@ enum {
 	FONT_SMALL2
 };
 
+typedef enum {
+	VERSION_1_00 = 0,
+	VERSION_1_01 = 1,
+	VERSION_UNDEF = 3,
+} mvversion_t;
+
+// multiprotocol support
+typedef enum {
+	PROTOCOL_UNDEF = 0,
+	PROTOCOL25 = 25,
+	PROTOCOL26 = 26,
+} mvprotocol_t;
+
 
 
 #endif	// __Q_SHARED_H

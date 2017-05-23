@@ -364,6 +364,42 @@ void Com_Quit_f( void ) {
 	Sys_Quit ();
 }
 
+/*
+==================
+MV_GetSetVersion
+==================
+*/
+
+// multiprotocol support
+mvversion_t glbpro;
+
+// This is Work in porgress
+void MV_SetCurrentGameversion(mvversion_t version) {
+	glbpro = version;
+
+	if (com_fullyInitialized)
+	{ // Only do this if we're fully initialized
+		if (version == VERSION_UNDEF)	Cvar_Set("version", va("%s, %s, %s", Q3_VERSION, CPUSTRING, __DATE__));
+		else							Cvar_Set("version", va("JAmp: v1.0.%01d.0 %s %s", version, CPUSTRING, __DATE__)); // Set the version to JAMP/OpenJK for compatibility reasons
+	}
+}
+
+mvversion_t MV_GetCurrentGameversion() {
+	return glbpro;
+}
+
+// not really needed?
+mvprotocol_t MV_GetCurrentProtocol() {
+	switch (MV_GetCurrentGameversion())
+	{
+	case VERSION_1_00:
+		return PROTOCOL25;
+	case VERSION_1_01:
+		return PROTOCOL26;
+	default:
+		return PROTOCOL_UNDEF;
+	}
+}
 
 
 /*
