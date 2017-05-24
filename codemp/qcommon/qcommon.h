@@ -202,7 +202,7 @@ PROTOCOL
 ==============================================================
 */
 
-#define	PROTOCOL_VERSION	26
+//#define	PROTOCOL_VERSION	26
 
 #ifndef _XBOX	// No gethostbyname(), and can't really use this stuff
 #define	UPDATE_SERVER_NAME		"updatejk3.ravensoft.com"

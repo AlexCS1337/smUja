@@ -606,7 +606,7 @@ bool Sys_FileOutOfDate( LPCSTR psFinalFileName /* dest */, LPCSTR psDataFileName
 		// timer res only accurate to within 2 seconds on FAT, so can't do exact compare...
 		//
 		//LONG l = CompareFileTime( &ftFinalFile, &ftDataFile );
-		if (  (abs(ftFinalFile.dwLowDateTime - ftDataFile.dwLowDateTime) <= 20000000 ) &&
+		if (  (fabs((double)(ftFinalFile.dwLowDateTime - ftDataFile.dwLowDateTime)) <= 20000000 ) &&
 				  ftFinalFile.dwHighDateTime == ftDataFile.dwHighDateTime				
 			)
 		{
@@ -646,7 +646,7 @@ bool FS_FileCacheable(const char* const filename)
 FS_ShiftedStrStr
 ===========
 */
-char *FS_ShiftedStrStr(const char *string, const char *substring, int shift) {
+char *FS_ShiftedStrStr(char *string, const char *substring, int shift) {
 	char buf[MAX_STRING_TOKENS];
 	int i;
 
@@ -695,7 +695,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 		Com_Error( ERR_FATAL, "FS_FOpenFileRead: NULL 'filename' parameter passed\n" );
 	}
 
-	Com_sprintf (demoExt, sizeof(demoExt), ".dm_%d",PROTOCOL_VERSION );
+	Com_sprintf (demoExt, sizeof(demoExt), ".dm_%d",MV_GetCurrentProtocol() );
 	// qpaths are not supposed to have a leading slash
 	if ( filename[0] == '/' || filename[0] == '\\' ) {
 		filename++;
@@ -793,34 +793,34 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 
 						// jampgame.qvm	- 13
 						// ]^&`cZT`X!di`
-						if (!(pak->referenced & FS_QAGAME_REF))
+						/*if (!(pak->referenced & FS_QAGAME_REF))
 						{
 							if (FS_ShiftedStrStr(filename, "]T`cZT`X!di`", 13) ||
 								FS_ShiftedStrStr(filename, "]T`cZT`Xk+)!W__", 13))
 							{
 								pak->referenced |= FS_QAGAME_REF;
 							}
-						}
+						}*/
 						// cgame.qvm	- 7
 						// \`Zf^'jof
-						if (!(pak->referenced & FS_CGAME_REF))
+						/*if (!(pak->referenced & FS_CGAME_REF))
 						{
 							if (FS_ShiftedStrStr(filename , "\\`Zf^'jof", 7) ||
 								FS_ShiftedStrStr(filename , "\\`Zf^q1/']ee", 7))
 							{
 								pak->referenced |= FS_CGAME_REF;
 							}
-						}
+						}*/
 						// ui.qvm		- 5
 						// pd)lqh
-						if (!(pak->referenced & FS_UI_REF))
+						/*if (!(pak->referenced & FS_UI_REF))
 						{
 							if (FS_ShiftedStrStr(filename , "pd)lqh", 5) ||
 								FS_ShiftedStrStr(filename , "pds31)_gg", 5))
 							{
 								pak->referenced |= FS_UI_REF;
 							}
-						}
+						}*/
 
 						if ( uniqueFILE ) {
 							// open a new file on the pakfile

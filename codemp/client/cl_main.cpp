@@ -5,6 +5,7 @@
 
 #include "client.h"
 #include "../qcommon/stringed_ingame.h"
+#include "../qcommon/game_version.h"
 #include <limits.h>
 #ifdef _XBOX
 #include "snd_local_console.h"
@@ -40,6 +41,8 @@
 
 cvar_t	*cl_nodelta;
 cvar_t	*cl_debugMove;
+
+qboolean	disconnecting;
 
 cvar_t	*cl_noprint;
 cvar_t	*cl_motd;
@@ -327,14 +330,14 @@ void CL_Record_f( void ) {
 	if ( Cmd_Argc() == 2 ) {
 		s = Cmd_Argv(1);
 		Q_strncpyz( demoName, s, sizeof( demoName ) );
-		Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
+		Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", demoName, MV_GetCurrentProtocol() );
 	} else {
 		int		number;
 
 		// scan for a free demo name
 		for ( number = 0 ; number <= 9999 ; number++ ) {
 			CL_DemoFilename( number, demoName );
-			Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
+			Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", demoName, MV_GetCurrentProtocol() );
 
 			len = FS_ReadFile( name, NULL );
 			if ( len <= 0 ) {
@@ -571,11 +574,11 @@ void CL_PlayDemo_f( void ) {
 
 	// open the demo file
 	arg = Cmd_Argv(1);
-	Com_sprintf(extension, sizeof(extension), ".dm_%d", PROTOCOL_VERSION);
+	Com_sprintf(extension, sizeof(extension), ".dm_%d", MV_GetCurrentProtocol());
 	if ( !Q_stricmp( arg + strlen(arg) - strlen(extension), extension ) ) {
 		Com_sprintf (name, sizeof(name), "demos/%s", arg);
 	} else {
-		Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", arg, PROTOCOL_VERSION);
+		Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", arg, MV_GetCurrentProtocol());
 	}
 	
 	FS_FOpenFileRead( name, &clc.demofile, qtrue );
@@ -762,6 +765,13 @@ void CL_FlushMemory( void ) {
 		// clear all the client data on the hunk
 		Hunk_ClearToMark();
 	}
+	if (disconnecting && !com_sv_running->integer) {
+		MV_SetCurrentGameversion(VERSION_UNDEF);
+		disconnecting = qfalse;
+
+		FS_PureServerSetReferencedPaks("", "");
+		FS_Restart(clc.checksumFeed);
+		}
 
 	CL_StartHunkUsers();
 }
@@ -973,6 +983,10 @@ void CL_RequestMotd( void ) {
 	Info_SetValueForKey( info, "renderer", cls.glconfig.renderer_string );
 	Info_SetValueForKey( info, "rvendor", cls.glconfig.vendor_string );
 	Info_SetValueForKey( info, "version", com_version->string );
+
+	// Always send the OpenJKmv "version" to the MOTD server
+	Info_SetValueForKey(info, "version", va("%s %s %s", Q3_VERSION, CPUSTRING, __DATE__));
+	Info_SetValueForKey(info, "OpenJKMV", VERSION_STRING_DOTTED);
 
 	Info_SetValueForKey( info, "cputype", Cvar_VariableString("sys_cpustring") );
 	Info_SetValueForKey( info, "mhz", Cvar_VariableString("sys_cpuspeed") );
@@ -1679,7 +1693,7 @@ void CL_CheckForResend( void ) {
 		port = (int) Cvar_VariableValue ("net_qport");
 
 		Q_strncpyz( info, Cvar_InfoString( CVAR_USERINFO ), sizeof( info ) );
-		Info_SetValueForKey( info, "protocol", va("%i", PROTOCOL_VERSION ) );
+		Info_SetValueForKey( info, "protocol", va("%i", MV_GetCurrentProtocol() ) );
 		Info_SetValueForKey( info, "qport", va("%i", port ) );
 		Info_SetValueForKey( info, "challenge", va("%i", clc.challenge ) );
 
@@ -2839,16 +2853,41 @@ void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 	char	info[MAX_INFO_STRING];
 	char*	str;
 	char	*infoString;
-	int		prot;
+	mvprotocol_t		prot;
 
 	infoString = MSG_ReadString( msg );
 
-	// if this isn't the correct protocol version, ignore it
+	/*// if this isn't the correct protocol version, ignore it
 	prot = atoi( Info_ValueForKey( infoString, "protocol" ) );
 	if ( prot != PROTOCOL_VERSION ) {
 		Com_DPrintf( "Different protocol info packet: %s\n", infoString );
 		return;
+	}*/
+	// if this isn't the correct protocol version, ignore it
+	prot = (mvprotocol_t)atoi(Info_ValueForKey(infoString, "protocol"));
+	if (prot != PROTOCOL25 && prot != PROTOCOL26) {
+		Com_DPrintf("Different protocol info packet: %s\n", infoString);
 	}
+
+	// multiprotocol support
+	if (cls.state == CA_CONNECTING && NET_CompareAdr(from, clc.serverAddress)) {
+		if (MV_GetCurrentGameversion() == VERSION_UNDEF)
+		{
+			switch (prot)
+			{
+			case PROTOCOL25:
+				MV_SetCurrentGameversion(VERSION_1_00);
+				break;
+			case PROTOCOL26:
+				MV_SetCurrentGameversion(VERSION_1_01);
+				break;
+			default:
+				MV_SetCurrentGameversion(VERSION_UNDEF);
+				break;
+			}
+			return;
+		}
+}
 
 #ifdef _XBOX
 	// Ignore servers that don't send an xnaddr
@@ -3076,6 +3115,30 @@ void CL_ServerStatusResponse( netadr_t from, msg_t *msg ) {
 			break;
 		}
 	}
+	// multiprotocol support
+	if (cls.state == CA_CONNECTING && NET_CompareAdr(from, clc.serverAddress))
+	{
+		char *versionString;
+		versionString = Info_ValueForKey(s, "version");
+
+		mvprotocol_t prot;
+		prot = (mvprotocol_t)atoi(Info_ValueForKey(s, "protocol"));
+
+		switch (prot)
+		{
+		case PROTOCOL25:
+			MV_SetCurrentGameversion(VERSION_1_00);
+			break;
+		case PROTOCOL26:
+			MV_SetCurrentGameversion(VERSION_1_01);
+			break;
+		default:
+			MV_SetCurrentGameversion(VERSION_UNDEF);
+			break;
+		}
+		return;
+	}
+
 	// if we didn't request this server status
 	if (!serverStatus) {
 		return;

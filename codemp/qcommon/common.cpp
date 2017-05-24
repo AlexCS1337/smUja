@@ -1253,6 +1253,9 @@ void Com_Init( char *commandLine ) {
 	char	*s;
 
 	Com_Printf( "%s %s %s\n", Q3_VERSION, CPUSTRING, __DATE__ );
+	// startup will be UNDEFINED
+	MV_SetCurrentGameversion(VERSION_UNDEF);
+	
 
 	try
 	{
@@ -1343,6 +1346,8 @@ void Com_Init( char *commandLine ) {
 		com_developer = Cvar_Get ("developer", "0", CVAR_TEMP );
 		com_vmdebug = Cvar_Get ("vmdebug", "0", CVAR_TEMP );
 		com_logfile = Cvar_Get ("logfile", "0", CVAR_TEMP );
+
+		Cvar_Get("protocol", "26", CVAR_SERVERINFO | CVAR_ROM);
 
 		com_timescale = Cvar_Get ("timescale", "1", CVAR_CHEAT | CVAR_SYSTEMINFO );
 		com_fixedtime = Cvar_Get ("fixedtime", "0", CVAR_CHEAT);
