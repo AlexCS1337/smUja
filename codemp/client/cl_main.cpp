@@ -1187,6 +1187,9 @@ void CL_Connect_f( void ) {
 	CL_Disconnect( qtrue );
 	Con_Close();
 
+	// needed because the protocol could have been changed
+	CL_FlushMemory();
+
 	/* MrE: 2000-09-13: now called in CL_DownloadsComplete
 	CL_FlushMemory( );
 	*/
@@ -1685,14 +1688,19 @@ void CL_CheckForResend( void ) {
 			CL_RequestAuthorization();
 		}
 #endif	// USE_CD_KEY
+		// The challenge request shall be followed by a client challenge so no malicious server can hijack this connection.
+		NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, "getinfo"); // for multiversion
 		NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, "getchallenge");
 		break;
 		
 	case CA_CHALLENGING:
+		if (MV_GetCurrentGameversion() == VERSION_UNDEF)
+			 break;
 		// sending back the challenge
 		port = (int) Cvar_VariableValue ("net_qport");
 
 		Q_strncpyz( info, Cvar_InfoString( CVAR_USERINFO ), sizeof( info ) );
+		Cvar_Set("protocol", va("%i", MV_GetCurrentProtocol())); // As we don't have any UI support to select the version we set whatever version we played on last as protocol
 		Info_SetValueForKey( info, "protocol", va("%i", MV_GetCurrentProtocol() ) );
 		Info_SetValueForKey( info, "qport", va("%i", port ) );
 		Info_SetValueForKey( info, "challenge", va("%i", clc.challenge ) );
@@ -2878,16 +2886,14 @@ void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 			case PROTOCOL25:
 				MV_SetCurrentGameversion(VERSION_1_00);
 				break;
+			default:
 			case PROTOCOL26:
 				MV_SetCurrentGameversion(VERSION_1_01);
 				break;
-			default:
-				MV_SetCurrentGameversion(VERSION_UNDEF);
-				break;
 			}
-			return;
 		}
-}
+	}
+
 
 #ifdef _XBOX
 	// Ignore servers that don't send an xnaddr
@@ -3131,9 +3137,6 @@ void CL_ServerStatusResponse( netadr_t from, msg_t *msg ) {
 			break;
 		case PROTOCOL26:
 			MV_SetCurrentGameversion(VERSION_1_01);
-			break;
-		default:
-			MV_SetCurrentGameversion(VERSION_UNDEF);
 			break;
 		}
 		return;
