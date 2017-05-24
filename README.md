@@ -1,4 +1,4 @@
-# smU for 1.01
+# ~smU ( ~ smoo's mod Ultimate ) for 1.01
 
 # Changes and additions
 
