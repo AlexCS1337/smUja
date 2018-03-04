@@ -1725,55 +1725,47 @@ void Cmd_Follow_f( gentity_t *ent ) {
 Cmd_FollowCycle_f
 =================
 */
-void Cmd_FollowCycle_f( gentity_t *ent, int dir ) {
-	int		clientnum;
-	int		original;
+void Cmd_FollowCycle_f(gentity_t *ent, int dir) 
+{
+	int	clientnum, i;
 
 	// if they are playing a tournement game, count as a loss
-	if ( (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL)
-		&& ent->client->sess.sessionTeam == TEAM_FREE ) {\
-		//WTF???
+	if ((g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL) && ent->client->sess.sessionTeam == TEAM_FREE)
 		ent->client->sess.losses++;
-	}
+
 	// first set them to spectator
-	if ( ent->client->sess.spectatorState == SPECTATOR_NOT ) {
-		SetTeam( ent, "spectator" );
-	}
+	if (ent->client->sess.spectatorState == SPECTATOR_NOT)
+		SetTeam(ent, "spectator");
 
-	if ( dir != 1 && dir != -1 ) {
-		G_Error( "Cmd_FollowCycle_f: bad dir %i", dir );
-	}
+	if (dir != 1 && dir != -1)
+		G_Error("Cmd_FollowCycle_f: bad dir %i", dir);
 
-	clientnum = ent->client->sess.spectatorClient;
-	original = clientnum;
-	do {
-		clientnum += dir;
-		if ( clientnum >= level.maxclients ) {
+	for (clientnum = ent->client->sess.spectatorClient, clientnum += dir, i = 0; i < level.maxclients; clientnum += dir, i += 1)
+	{
+		gclient_t *client;
+
+		if (clientnum >= level.maxclients)
 			clientnum = 0;
-		}
-		if ( clientnum < 0 ) {
+		else if (clientnum < 0)
 			clientnum = level.maxclients - 1;
+
+		client = &level.clients[clientnum];
+		
+		if (client->pers.connected == CON_CONNECTED 
+			&& client->sess.sessionTeam != TEAM_SPECTATOR
+			&& client->tempSpectate < level.time)
+		{
+			// this is good, we can use it
+			ent->client->sess.spectatorClient = clientnum;
+			ent->client->sess.spectatorState = SPECTATOR_FOLLOW;
+			return;
 		}
+	}
 
-		// can only follow connected clients
-		if ( level.clients[ clientnum ].pers.connected != CON_CONNECTED ) {
-			continue;
-		}
-
-		// can't follow another spectator
-		if ( level.clients[ clientnum ].sess.sessionTeam == TEAM_SPECTATOR ) {
-			continue;
-		}
-
-		// this is good, we can use it
-		ent->client->sess.spectatorClient = clientnum;
-		ent->client->sess.spectatorState = SPECTATOR_FOLLOW;
-		return;
-	} while ( clientnum != original );
-
-	// leave it where it was
+	// no clients to spectate found
+	ent->client->sess.spectatorClient = 0;
+	ent->client->sess.spectatorState = SPECTATOR_FREE;
 }
-
 
 /*
 ==================
