@@ -112,7 +112,16 @@ void trap_DropClient( int clientNum, const char *reason ) {
 }
 
 void trap_SendServerCommand( int clientNum, const char *text ) {
-	syscall( G_SEND_SERVER_COMMAND, clientNum, text );
+	int length = strlen(text);
+	if (length > 1022) {
+		char textBuffer[256];
+		Q_strncpyz(textBuffer, text, sizeof(textBuffer)); 
+		//G_LogPrintf("ServerCommand exceeds 1022 bytes.. Total %d bytes. Text: \"%s\"", length, textBuffer);
+		//we want it to crash so we can fix the problem later
+		Com_Error(ERR_DROP, "ServerCommand exceeds 1022 bytes.. Total %d bytes. Text: \"%s\"", length, textBuffer);
+	} else {
+		syscall( G_SEND_SERVER_COMMAND, clientNum, text );
+	}
 }
 
 void trap_SetConfigstring( int num, const char *string ) {
