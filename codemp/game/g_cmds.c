@@ -1872,7 +1872,7 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 		color = COLOR_CYAN;
 		break;
 	case SAY_TELL:
-		G_LogPrintf( "tell: %s to %s: %s\n", ent->client->pers.netname, target->client->pers.netname, text )
+		G_LogPrintf( "tell: %s to %s: %s\n", ent->client->pers.netname, target->client->pers.netname, text );
 		if (target && g_gametype.integer >= GT_TEAM &&
 			target->client->sess.sessionTeam == ent->client->sess.sessionTeam &&
 			Team_GetLocationMsg(ent, location, sizeof(location)))
