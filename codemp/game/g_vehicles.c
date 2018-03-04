@@ -42,7 +42,7 @@
 #endif
 
 #ifdef _JK2MP
-extern gentity_t *NPC_Spawn_Do( gentity_t *ent );
+extern gentity_t *NPC_Spawn_Do( gentity_t *ent, gentity_t *client);
 extern void NPC_SetAnim(gentity_t	*ent,int setAnimParts,int anim,int setAnimFlags);
 extern void G_DamageFromKiller( gentity_t *pEnt, gentity_t *pVehEnt, gentity_t *attacker, vec3_t org, int damage, int dflags, int mod );
 
@@ -205,7 +205,7 @@ void G_VehicleSpawn( gentity_t *self )
 	yaw = self->s.angles[YAW];
 	
 #ifdef _JK2MP
-	vehEnt = NPC_Spawn_Do( self );
+	vehEnt = NPC_Spawn_Do( self, 0 );
 #else
 	vehEnt = NPC_Spawn_Do( self, qtrue );
 #endif

@@ -1374,7 +1374,7 @@ extern void G_CreateWalkerNPC( Vehicle_t **pVeh, const char *strAnimalType );
 extern void G_CreateFighterNPC( Vehicle_t **pVeh, const char *strType );
 #include "../namespace_end.h"
 
-gentity_t *NPC_Spawn_Do( gentity_t *ent )
+gentity_t *NPC_Spawn_Do( gentity_t *ent, gentity_t *client )
 {
 	gentity_t	*newent = NULL;
 	int			index;
@@ -1421,6 +1421,10 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 	if ( newent == NULL ) 
 	{
 		Com_Printf ( S_COLOR_RED"ERROR: NPC G_Spawn failed\n" );
+
+		if (client)
+			trap_SendServerCommand(client-g_entities, "print \""S_COLOR_RED"ERROR: NPC G_Spawn failed\n\"");
+
 		return NULL;
 	}
 	
@@ -1429,7 +1433,11 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 	newent->NPC = New_NPC_t(newent->s.number);	
 	if ( newent->NPC == NULL ) 
 	{		
-		Com_Printf ( S_COLOR_RED"ERROR: NPC G_Alloc NPC failed\n" );		
+		Com_Printf ( S_COLOR_RED"ERROR: NPC G_Alloc NPC failed\n" );	
+
+		if (client)
+			trap_SendServerCommand(client-g_entities, "print \""S_COLOR_RED"ERROR: NPC G_Alloc NPC failed\n\"");
+
 		goto finish;
 		return NULL;
 	}	
@@ -1453,6 +1461,10 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 	if ( newent->client == NULL ) 
 	{
 		Com_Printf ( S_COLOR_RED"ERROR: NPC BG_Alloc client failed\n" );
+
+		if (client)
+			trap_SendServerCommand(client-g_entities, "print \""S_COLOR_RED"ERROR: NPC BG_Alloc client failed\n\"");
+
 		goto finish;
 		return NULL;
 	}
@@ -1530,6 +1542,9 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 
 			default:
 				Com_Printf ( S_COLOR_RED "ERROR: Couldn't spawn NPC %s\n", ent->NPC_type );
+				if (client)
+					trap_SendServerCommand(client-g_entities, va("print \""S_COLOR_RED"ERROR: Couldn't spawn NPC %s\n\"", ent->NPC_type));
+
 				G_FreeEntity( newent );
 				//get rid of the spawner, too, I guess
 				G_FreeEntity( ent );
@@ -1594,6 +1609,9 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 	if ( !NPC_ParseParms( ent->NPC_type, newent ) )
 	{
 		Com_Printf ( S_COLOR_RED "ERROR: Couldn't spawn NPC %s\n", ent->NPC_type );
+		if (client)
+			trap_SendServerCommand(client-g_entities, va("print \""S_COLOR_RED"ERROR: Couldn't spawn NPC %s\n\"", ent->NPC_type));
+
 		G_FreeEntity( newent );
 		//get rid of the spawner, too, I guess
 		G_FreeEntity( ent );
@@ -1764,7 +1782,7 @@ finish:
 
 void NPC_Spawn_Go(gentity_t *ent)
 {
-	NPC_Spawn_Do(ent);
+	NPC_Spawn_Do(ent, 0);
 }
 
 /*
@@ -1867,7 +1885,7 @@ void NPC_Spawn ( gentity_t *ent, gentity_t *other, gentity_t *activator )
 		}
 		else
 		{
-			NPC_Spawn_Do( ent );
+			NPC_Spawn_Do( ent, 0 );
 		}
 	}
 }
@@ -3877,7 +3895,7 @@ gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboo
 
 	if(!NPCspawner)
 	{
-		Com_Printf( S_COLOR_RED"NPC_Spawn Error: Out of entities!\n" );
+		trap_SendServerCommand(ent-g_entities, "print \""S_COLOR_RED"NPC_Spawn Error: Out of entities!\n\"");
 		return NULL;
 	}
 
@@ -3891,7 +3909,7 @@ gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboo
 
 	if (!npc_type[0])
 	{
-		Com_Printf( S_COLOR_RED"Error, expected one of:\n"S_COLOR_WHITE" NPC spawn [NPC type (from ext_data/NPCs)]\n NPC spawn vehicle [VEH type (from ext_data/vehicles)]\n" );
+		trap_SendServerCommand(ent-g_entities, "print \"Error, expected one of:\n"S_COLOR_WHITE" NPC spawn [NPC type (from ext_data/NPCs)]\n NPC spawn vehicle [VEH type (from ext_data/vehicles)]\n\"");
 		return NULL;
 	}
 
@@ -4014,7 +4032,7 @@ gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboo
 		NPC_Wampa_Precache();
 	}
 
-	return (NPC_Spawn_Do( NPCspawner ));
+	return (NPC_Spawn_Do( NPCspawner, ent ));
 }
 
 void NPC_Spawn_f( gentity_t *ent ) 
@@ -4042,7 +4060,7 @@ void NPC_Spawn_f( gentity_t *ent )
 NPC_Kill_f
 */
 extern stringID_table_t TeamTable[];
-void NPC_Kill_f( void ) 
+void NPC_Kill_f( gentity_t *ent ) 
 {
 	int			n;
 	gentity_t	*player;
@@ -4054,12 +4072,13 @@ void NPC_Kill_f( void )
 
 	if ( !name[0] )
 	{
-		Com_Printf( S_COLOR_RED"Error, Expected:\n");
-		Com_Printf( S_COLOR_RED"NPC kill '[NPC targetname]' - kills NPCs with certain targetname\n" );
-		Com_Printf( S_COLOR_RED"or\n" );
-		Com_Printf( S_COLOR_RED"NPC kill 'all' - kills all NPCs\n" );
-		Com_Printf( S_COLOR_RED"or\n" );
-		Com_Printf( S_COLOR_RED"NPC team '[teamname]' - kills all NPCs of a certain team ('nonally' is all but your allies)\n" );
+		trap_SendServerCommand(ent-g_entities, "print \""S_COLOR_RED"Error, Expected:\n\"");
+		trap_SendServerCommand(ent-g_entities, "print \""S_COLOR_RED"NPC kill '[NPC targetname]' - kills NPCs with certain targetname\n\"");
+		trap_SendServerCommand(ent-g_entities, "print \""S_COLOR_RED"or\n\"");
+		trap_SendServerCommand(ent-g_entities, "print \""S_COLOR_RED"NPC kill 'all' - kills all NPCs\n\"");
+		trap_SendServerCommand(ent-g_entities, "print \""S_COLOR_RED"or\n\"");
+		trap_SendServerCommand(ent-g_entities, "print \""S_COLOR_RED"NPC team '[teamname]' - kills all NPCs of a certain team ('nonally' is all but your allies)\n\"");
+ 
 		return;
 	}
 
@@ -4069,13 +4088,15 @@ void NPC_Kill_f( void )
 
 		if ( !name[0] )
 		{
-			Com_Printf( S_COLOR_RED"NPC_Kill Error: 'npc kill team' requires a team name!\n" );
-			Com_Printf( S_COLOR_RED"Valid team names are:\n");
+			trap_SendServerCommand(ent-g_entities, "print \""S_COLOR_RED"NPC_Kill Error: 'npc kill team' requires a team name!\n\"");
+			trap_SendServerCommand(ent-g_entities, "print \""S_COLOR_RED"Valid team names are:\n\"");
+	
 			for ( n = (TEAM_FREE + 1); n < TEAM_NUM_TEAMS; n++ )
 			{
-				Com_Printf( S_COLOR_RED"%s\n", TeamNames[n] );
+				trap_SendServerCommand(ent-g_entities, va("print \""S_COLOR_RED"%s\n\"", TeamNames[n]));
+
 			}
-			Com_Printf( S_COLOR_RED"nonally - kills all but your teammates\n" );
+			trap_SendServerCommand(ent-g_entities, "print \""S_COLOR_RED"nonally - kills all but your teammates\n\""); 	
 			return;
 		}
 
@@ -4089,13 +4110,15 @@ void NPC_Kill_f( void )
 
 			if ( killTeam == TEAM_FREE )
 			{
-				Com_Printf( S_COLOR_RED"NPC_Kill Error: team '%s' not recognized\n", name );
-				Com_Printf( S_COLOR_RED"Valid team names are:\n");
+				trap_SendServerCommand(ent-g_entities, va("print \""S_COLOR_RED"NPC_Kill Error: team '%s' not recognized\n\"", name));
+				trap_SendServerCommand(ent-g_entities, "print \""S_COLOR_RED"Valid team names are:\n\"");
+
 				for ( n = (TEAM_FREE + 1); n < TEAM_NUM_TEAMS; n++ )
 				{
-					Com_Printf( S_COLOR_RED"%s\n", TeamNames[n] );
+					trap_SendServerCommand(ent-g_entities, va("print \""S_COLOR_RED"%s\n\"", TeamNames[n]));
+ 	
 				}
-				Com_Printf( S_COLOR_RED"nonally - kills all but your teammates\n" );
+				trap_SendServerCommand(ent-g_entities, "print \""S_COLOR_RED"nonally - kills all but your teammates\n\"");
 				return;
 			}
 		}
@@ -4115,7 +4138,7 @@ void NPC_Kill_f( void )
 				{
 					if ( player->client->playerTeam != NPCTEAM_PLAYER )
 					{
-						Com_Printf( S_COLOR_GREEN"Killing NPC %s named %s\n", player->NPC_type, player->targetname );
+						trap_SendServerCommand(ent-g_entities, va("print \""S_COLOR_GREEN"Killing NPC %s named %s\n\"", player->NPC_type, player->targetname));
 						player->health = 0;
 
 						if (player->die && player->client)
@@ -4126,7 +4149,7 @@ void NPC_Kill_f( void )
 				}
 				else if ( player->NPC_type && player->classname && player->classname[0] && Q_stricmp( "NPC_starfleet", player->classname ) != 0 )
 				{//A spawner, remove it
-					Com_Printf( S_COLOR_GREEN"Removing NPC spawner %s with NPC named %s\n", player->NPC_type, player->NPC_targetname );
+					trap_SendServerCommand(ent-g_entities, va("print \""S_COLOR_GREEN"Removing NPC spawner %s with NPC named %s\n\"", player->NPC_type, player->NPC_targetname));
 					G_FreeEntity( player );
 					//FIXME: G_UseTargets2(player, player, player->NPC_target & player->target);?
 				}
@@ -4138,7 +4161,7 @@ void NPC_Kill_f( void )
 			{
 				if ( player->client->playerTeam == killTeam )
 				{
-					Com_Printf( S_COLOR_GREEN"Killing NPC %s named %s\n", player->NPC_type, player->targetname );
+					trap_SendServerCommand(ent-g_entities, va("print \""S_COLOR_GREEN"Killing NPC %s named %s\n\"", player->NPC_type, player->targetname));
 					player->health = 0;
 					if (player->die)
 					{
@@ -4149,7 +4172,7 @@ void NPC_Kill_f( void )
 			else if( (player->targetname && Q_stricmp( name, player->targetname ) == 0)
 				|| Q_stricmp( name, "all" ) == 0 )
 			{
-				Com_Printf( S_COLOR_GREEN"Killing NPC %s named %s\n", player->NPC_type, player->targetname );
+				trap_SendServerCommand(ent-g_entities, va("print \""S_COLOR_GREEN"Killing NPC %s named %s\n\"", player->NPC_type, player->targetname));
 				player->health = 0;
 				player->client->ps.stats[STAT_HEALTH] = 0;
 				if (player->die)
@@ -4171,7 +4194,7 @@ void NPC_Kill_f( void )
 
 void NPC_PrintScore( gentity_t *ent )
 {
-	Com_Printf( "%s: %d\n", ent->targetname, ent->client->ps.persistant[PERS_SCORE] );
+			trap_SendServerCommand(ent-g_entities, va("print \"%s: %d\n\"", ent->targetname, ent->client->ps.persistant[PERS_SCORE]));
 }
 
 /*
@@ -4188,11 +4211,12 @@ void Cmd_NPC_f( gentity_t *ent )
 
 	if ( !cmd[0] ) 
 	{
-		Com_Printf( "Valid NPC commands are:\n" );
-		Com_Printf( " spawn [NPC type (from NCPCs.cfg)]\n" );
-		Com_Printf( " kill [NPC targetname] or [all(kills all NPCs)] or 'team [teamname]'\n" );
-		Com_Printf( " showbounds (draws exact bounding boxes of NPCs)\n" );
-		Com_Printf( " score [NPC targetname] (prints number of kills per NPC)\n" );
+		trap_SendServerCommand(ent-g_entities, "print \"Valid NPC commands are:\n\"");
+		trap_SendServerCommand(ent-g_entities, "print \" spawn [NPC type (from NCPCs.cfg)]\n\"");
+		trap_SendServerCommand(ent-g_entities, "print \" kill [NPC targetname] or [all(kills all NPCs)] or 'team [teamname]'\n\"");
+		trap_SendServerCommand(ent-g_entities, "print \" showbounds (draws exact bounding boxes of NPCs)\n\"");
+		trap_SendServerCommand(ent-g_entities, "print \" score [NPC targetname] (prints number of kills per NPC)\n\"");
+
 	}
 	else if ( Q_stricmp( cmd, "spawn" ) == 0 )
 	{
@@ -4200,7 +4224,7 @@ void Cmd_NPC_f( gentity_t *ent )
 	}
 	else if ( Q_stricmp( cmd, "kill" ) == 0 ) 
 	{
-		NPC_Kill_f();
+		NPC_Kill_f( ent );
 	}
 	else if ( Q_stricmp( cmd, "showbounds" ) == 0 )
 	{//Toggle on and off
@@ -4217,7 +4241,8 @@ void Cmd_NPC_f( gentity_t *ent )
 		{//Show the score for all NPCs
 			int i;
 
-			Com_Printf( "SCORE LIST:\n" );
+			trap_SendServerCommand(ent-g_entities, "print \"SCORE LIST:\n\"");
+
 			for ( i = 0; i < ENTITYNUM_WORLD; i++ )
 			{
 				ent = &g_entities[i];
@@ -4236,7 +4261,7 @@ void Cmd_NPC_f( gentity_t *ent )
 			}
 			else
 			{
-				Com_Printf( "ERROR: NPC score - no such NPC %s\n", cmd2 );
+			trap_SendServerCommand(ent-g_entities, va("print \"ERROR: NPC score - no such NPC %s\n\"", cmd2));
 			}
 		}
 	}
