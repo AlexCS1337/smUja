@@ -2237,6 +2237,78 @@ void ClientUserinfoChanged( int clientNum ) {
 
 /*
 ===========
+ExceedsMaxConnections
+
+Checks if the connecting client exceeds max connections
+============
+*/
+qboolean ExceedsMaxConnections(int clientNum)
+{
+	// max IP pattern: 255.255.255.255:65535
+	// max IP string length: 21
+	int i, matches, j;
+	qboolean trim;
+	char connectingIP[22];
+	char clientIP[22];
+	char userinfo[MAX_INFO_STRING];
+
+	if (g_maxConnectionsPerIP.integer <= 0)
+		return qfalse;
+
+	// set the connecting ip addr
+	trap_GetUserinfo(clientNum, userinfo, sizeof(userinfo));
+	Q_strncpyz(connectingIP, Info_ValueForKey(userinfo, "ip"), sizeof(connectingIP));
+
+	// trim port
+	for (i = strlen(connectingIP) - 1, trim = qtrue; i >= 0 && trim; --i)
+	{
+		if (connectingIP[i] == ':')
+			trim = qfalse;
+
+		connectingIP[i] = 0;
+	}
+
+	// ignore localhost
+	if (Q_strncmp(connectingIP, "localhost", sizeof(connectingIP)) == 0)
+		return qfalse;
+	
+	for (i = 0, matches = 0; i < level.maxclients && matches < g_maxConnectionsPerIP.integer; ++i)
+	{
+		// ignore self
+		if (i == clientNum)
+			continue;
+
+		// only check connected or connecting clients
+		if (level.clients[i].pers.connected != CON_CONNECTED && level.clients[i].pers.connected != CON_CONNECTING)
+			continue;
+
+		// set client ip
+		trap_GetUserinfo(i, userinfo, sizeof(userinfo));
+		Q_strncpyz(clientIP, Info_ValueForKey(userinfo, "ip"), sizeof(clientIP));
+
+		// trim port
+		for (j = strlen(clientIP) - 1, trim = qtrue; j >= 0 && trim; --j)
+		{
+			if (clientIP[j] == ':')
+				trim = qfalse;
+
+			clientIP[j] = 0;
+		}
+
+		// add up matching ips
+		if (Q_strncmp(connectingIP, clientIP, sizeof(connectingIP)) == 0)
+			++matches;
+	}
+
+	if (matches < g_maxConnectionsPerIP.integer)
+		return qfalse;
+
+	return qtrue;
+}
+
+
+/*
+===========
 ClientConnect
 
 Called when a player begins connecting to the server.
@@ -2286,6 +2358,10 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 			Q_strncpyz(sTemp, G_GetStringEdString("MP_SVGAME","INVALID_ESCAPE_TO_MAIN"), sizeof (sTemp) );
 			return sTemp;// return "Invalid password";
 		}
+	}
+
+	if (!(ent->r.svFlags & SVF_BOT) && !isBot && ExceedsMaxConnections(clientNum)) {
+		return "Exceeded Max Connections";
 	}
 
 	// they can connect
