@@ -2252,7 +2252,7 @@ qboolean ExceedsMaxConnections(int clientNum)
 	char clientIP[22];
 	char userinfo[MAX_INFO_STRING];
 
-	if (g_maxConnectionsPerIP.integer <= 0)
+	if (g_maxConnPerIP.integer <= 0)
 		return qfalse;
 
 	// set the connecting ip addr
@@ -2272,7 +2272,7 @@ qboolean ExceedsMaxConnections(int clientNum)
 	if (Q_strncmp(connectingIP, "localhost", sizeof(connectingIP)) == 0)
 		return qfalse;
 	
-	for (i = 0, matches = 0; i < level.maxclients && matches < g_maxConnectionsPerIP.integer; ++i)
+	for (i = 0, matches = 0; i < level.maxclients && matches < g_maxConnPerIP.integer; ++i)
 	{
 		// ignore self
 		if (i == clientNum)
@@ -2300,12 +2300,25 @@ qboolean ExceedsMaxConnections(int clientNum)
 			++matches;
 	}
 
-	if (matches < g_maxConnectionsPerIP.integer)
+	if (matches < g_maxConnPerIP.integer)
 		return qfalse;
 
 	return qtrue;
 }
 
+static qboolean CompareIPString( const char *ip1, const char *ip2 ) {
+	while ( 1 ) {
+		if ( *ip1 != *ip2 ) {
+			return qfalse;
+		}
+		if ( !*ip1 || *ip1 == ':' ) {
+			break;
+		}
+		ip1++, ip2++;
+	}
+
+	return qtrue;
+}
 
 /*
 ===========
@@ -2331,11 +2344,13 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	char		*value;
 //	char		*areabits;
 	gclient_t	*client;
-	char		userinfo[MAX_INFO_STRING];
+//	char		userinfo[MAX_INFO_STRING];
 	char		IPstring[32]={0};
 	gentity_t	*ent;
 	gentity_t	*te;
-
+	char		userinfo[MAX_INFO_STRING] = {0},
+				tmpIP[NET_ADDRSTRMAXLEN] = {0},
+guid[33] = {0};
 	ent = &g_entities[ clientNum ];
 
 	trap_GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
@@ -2360,10 +2375,33 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		}
 	}
 
-	if (!(ent->r.svFlags & SVF_BOT) && !isBot && ExceedsMaxConnections(clientNum)) {
+	// disallow multiple connections from same IP
+	if ( !isBot && firstTime ) {
+		if ( g_antiFakePlayer.integer ) {
+			// check for > g_maxConnPerIP connections from same IP
+			int count = 0, i = 0;
+			for ( i = 0; i< g_maxclients.integer; i++ ) {
+				if ( CompareIPString( tmpIP, level.clients[i].sess.IP ) ) {
+					count++;
+				}
+			}
+			if ( count > g_maxConnPerIP.integer ) {
+				return "Too many connections from the same IP";
+			}
+		}
+}
+
+	if ( ent->inuse )
+	{// if a player reconnects quickly after a disconnect, the client disconnect may never be called, thus flag can get lost in the ether
+		G_LogPrintf( "Forcing disconnect on active client: %i\n", clientNum );
+		// so lets just fix up anything that should happen on a disconnect
+		ClientDisconnect( clientNum );
+}
+
+/*	if (!(ent->r.svFlags & SVF_BOT) && !isBot && ExceedsMaxConnections(clientNum)) {
 		return "Exceeded Max Connections";
 	}
-
+*/
 	// they can connect
 	ent->client = level.clients + clientNum;
 	client = ent->client;
