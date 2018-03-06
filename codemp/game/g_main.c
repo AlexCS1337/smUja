@@ -221,7 +221,9 @@ vmCvar_t	g_austrian;
 
 vmCvar_t	g_powerDuelStartHealth;
 vmCvar_t	g_powerDuelEndHealth;
-vmCvar_t		g_maxConnectionsPerIP;
+vmCvar_t		g_maxConnPerIP;
+vmCvar_t                g_antiFakePlayer;
+
 
 // smU cVars go here
 vmCvar_t g_allowBlackNames;
@@ -291,7 +293,8 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_trueJedi, "g_jediVmerc", "0", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0, qtrue },
 
 	// change anytime vars
-	{ &g_maxConnectionsPerIP, "g_maxConnectionsPerIP", "3", CVAR_ARCHIVE, 0, qtrue, qfalse },
+	{ &g_maxConnPerIP, "g_maxConnectionsPerIP", "3", CVAR_ARCHIVE, 0, qtrue, qfalse },
+        { &g_antiFakePlayer, "g__antiFakePlayer", "1", CVAR_ARCHIVE, 0, qtrue, qfalse },
 	{ &g_ff_objectives, "g_ff_objectives", "0", /*CVAR_SERVERINFO |*/ CVAR_CHEAT | CVAR_NORESTART, 0, qtrue },
 
 	{ &g_autoMapCycle, "g_autoMapCycle", "0", CVAR_ARCHIVE | CVAR_NORESTART, 0, qtrue },

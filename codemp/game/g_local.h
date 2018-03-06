@@ -494,7 +494,7 @@ typedef struct {
 	char		saber2Type[64];
 	int			duelTeam;
 	int			siegeDesiredTeam;
-
+	char		IP[NET_ADDRSTRMAXLEN];
 	// smU serverside
 	qboolean	sawMOTD; // smU, has the client been shown the MOTD?
 
@@ -507,6 +507,7 @@ typedef struct {
 	int			killCount;
 	int			TKCount;
 	char		IPstring[32];		// yeah, I know, could be 16, but, just in case...
+
 } clientSession_t;
 
 // playerstate mGameFlags
@@ -1878,8 +1879,8 @@ extern	vmCvar_t	g_powerDuelEndHealth;
 
 extern vmCvar_t		g_showDuelHealths;
 
-extern vmCvar_t		g_maxConnectionsPerIP;
-
+extern vmCvar_t		g_maxConnPerIP;
+extern vmCvar_t		g_antiFakePlayer;
 
 #include "../namespace_begin.h"
 
