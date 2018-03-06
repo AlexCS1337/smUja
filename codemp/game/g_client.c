@@ -2398,10 +2398,10 @@ guid[33] = {0};
 		ClientDisconnect( clientNum );
 }
 
-/*	if (!(ent->r.svFlags & SVF_BOT) && !isBot && ExceedsMaxConnections(clientNum)) {
+	if (!(ent->r.svFlags & SVF_BOT) && !isBot && ExceedsMaxConnections(clientNum)) {
 		return "Exceeded Max Connections";
 	}
-*/
+
 	// they can connect
 	ent->client = level.clients + clientNum;
 	client = ent->client;
