@@ -2344,13 +2344,12 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	char		*value;
 //	char		*areabits;
 	gclient_t	*client;
-//	char		userinfo[MAX_INFO_STRING];
+	char		userinfo[MAX_INFO_STRING];
 	char		IPstring[32]={0};
 	gentity_t	*ent;
 	gentity_t	*te;
-	char		userinfo[MAX_INFO_STRING] = {0},
-				tmpIP[NET_ADDRSTRMAXLEN] = {0},
-guid[33] = {0};
+	char		tmpIP[NET_ADDRSTRMAXLEN];
+
 	ent = &g_entities[ clientNum ];
 
 	trap_GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
@@ -2389,14 +2388,15 @@ guid[33] = {0};
 				return "Too many connections from the same IP";
 			}
 		}
-}
+	}
 
 	if ( ent->inuse )
-	{// if a player reconnects quickly after a disconnect, the client disconnect may never be called, thus flag can get lost in the ether
+	{
+		// if a player reconnects quickly after a disconnect, the client disconnect may never be called, thus flag can get lost in the ether
 		G_LogPrintf( "Forcing disconnect on active client: %i\n", clientNum );
 		// so lets just fix up anything that should happen on a disconnect
 		ClientDisconnect( clientNum );
-}
+	}
 
 	if (!(ent->r.svFlags & SVF_BOT) && !isBot && ExceedsMaxConnections(clientNum)) {
 		return "Exceeded Max Connections";
