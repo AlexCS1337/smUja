@@ -1930,6 +1930,68 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 	}
 }
 
+static void BeginPmoveTrace(const playerState_t * const ps)
+{
+	int i;
+	gentity_t *e;
+
+	if (!g_duelPassThru.integer)
+		return;
+
+	if (ps->duelInProgress) {
+		for (i = 0; i < MAX_GENTITIES; ++i) {
+			e = &g_entities[i];
+			if (i != ps->clientNum
+				&& i != ps->duelIndex
+				&& e->inuse
+				&& (e->s.eType == ET_PLAYER || e->s.eType == ET_NPC)) {
+				e->r.ownerNum = ps->clientNum;
+			}
+		}
+	} else {
+		for (i = 0; i < MAX_CLIENTS; ++i) {
+			e = &g_entities[i];
+			if (i != ps->clientNum
+				&& e->inuse
+				&& e->client
+				&& e->client->ps.duelInProgress) {
+				e->r.ownerNum = ps->clientNum;
+			}
+		}
+	}
+}
+
+static void EndPmoveTrace(const playerState_t * const ps)
+{
+	int i;
+	gentity_t *e;
+
+	if (!g_duelPassThru.integer)
+		return;
+
+	if (ps->duelInProgress) {
+		for (i = 0; i < MAX_GENTITIES; ++i) {
+			e = &g_entities[i];
+			if (i != ps->clientNum
+				&& i != ps->duelIndex
+				&& e->inuse
+				&& (e->s.eType == ET_PLAYER || e->s.eType == ET_NPC)) {
+				e->r.ownerNum = ENTITYNUM_NONE;
+			}
+		}
+	} else {
+		for (i = 0; i < MAX_CLIENTS; ++i) {
+			e = &g_entities[i];
+			if (i != ps->clientNum
+				&& e->inuse
+				&& e->client
+				&& e->client->ps.duelInProgress) {
+				e->r.ownerNum = ENTITYNUM_NONE;
+			}
+		}
+	}
+}
+
 /*
 ==============
 ClientThink
@@ -3127,8 +3189,11 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 #endif
 	}
+	BeginPmoveTrace(pm.ps);
 
 	Pmove (&pm);
+
+	EndPmoveTrace(pm.ps);
 
 	if (ent->client->solidHack)
 	{
