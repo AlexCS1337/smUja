@@ -293,7 +293,7 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_maxGameClients, "g_maxGameClients", "0", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0, qfalse  },
 
 	{ &g_trueJedi, "g_jediVmerc", "0", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0, qtrue },
-	{ &g_duelPassThru, "g_duelPassThru", "1", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0, qtrue },
+	{ &g_duelPassThru, "g_duelPassThru", "0", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0, qtrue },
 
 	// change anytime vars
 	{ &g_maxConnPerIP, "g_maxConnectionsPerIP", "3", CVAR_ARCHIVE, 0, qtrue, qfalse },
