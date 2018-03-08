@@ -224,7 +224,6 @@ vmCvar_t	g_powerDuelEndHealth;
 
 
 vmCvar_t		g_maxConnPerIP;
-vmCvar_t                g_antiFakePlayer;
 vmCvar_t 		g_duelPassThru;
 
 // smU cVars go here
@@ -297,7 +296,6 @@ static cvarTable_t		gameCvarTable[] = {
 
 	// change anytime vars
 	{ &g_maxConnPerIP, "g_maxConnPerIP", "3", CVAR_ARCHIVE, 0, qtrue, qfalse },
-        { &g_antiFakePlayer, "g_antiFakePlayer", "1", CVAR_ARCHIVE, 0, qtrue, qfalse },
 	{ &g_ff_objectives, "g_ff_objectives", "0", /*CVAR_SERVERINFO |*/ CVAR_CHEAT | CVAR_NORESTART, 0, qtrue },
 
 	{ &g_autoMapCycle, "g_autoMapCycle", "0", CVAR_ARCHIVE | CVAR_NORESTART, 0, qtrue },

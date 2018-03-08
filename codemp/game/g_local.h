@@ -1880,7 +1880,6 @@ extern	vmCvar_t	g_powerDuelEndHealth;
 extern vmCvar_t		g_showDuelHealths;
 
 extern vmCvar_t		g_maxConnPerIP;
-extern vmCvar_t		g_antiFakePlayer;
 extern vmCvar_t 	g_duelPassThru;
 
 #include "../namespace_begin.h"
