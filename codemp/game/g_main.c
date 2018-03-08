@@ -296,7 +296,7 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &g_duelPassThru, "g_duelPassThru", "0", CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE, 0, qtrue },
 
 	// change anytime vars
-	{ &g_maxConnPerIP, "g_maxConnectionsPerIP", "3", CVAR_ARCHIVE, 0, qtrue, qfalse },
+	{ &g_maxConnPerIP, "g_maxConnPerIP", "3", CVAR_ARCHIVE, 0, qtrue, qfalse },
         { &g_antiFakePlayer, "g_antiFakePlayer", "1", CVAR_ARCHIVE, 0, qtrue, qfalse },
 	{ &g_ff_objectives, "g_ff_objectives", "0", /*CVAR_SERVERINFO |*/ CVAR_CHEAT | CVAR_NORESTART, 0, qtrue },
 
