@@ -2306,20 +2306,6 @@ qboolean ExceedsMaxConnections(int clientNum)
 	return qtrue;
 }
 
-static qboolean CompareIPString( const char *ip1, const char *ip2 ) {
-	while ( 1 ) {
-		if ( *ip1 != *ip2 ) {
-			return qfalse;
-		}
-		if ( !*ip1 || *ip1 == ':' ) {
-			break;
-		}
-		ip1++, ip2++;
-	}
-
-	return qtrue;
-}
-
 /*
 ===========
 ClientConnect
@@ -2348,7 +2334,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	char		IPstring[32]={0};
 	gentity_t	*ent;
 	gentity_t	*te;
-	char		tmpIP[NET_ADDRSTRMAXLEN];
 
 	ent = &g_entities[ clientNum ];
 
@@ -2371,22 +2356,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 			static char sTemp[1024];
 			Q_strncpyz(sTemp, G_GetStringEdString("MP_SVGAME","INVALID_ESCAPE_TO_MAIN"), sizeof (sTemp) );
 			return sTemp;// return "Invalid password";
-		}
-	}
-
-	// disallow multiple connections from same IP
-	if ( !isBot && firstTime ) {
-		if ( g_antiFakePlayer.integer ) {
-			// check for > g_maxConnPerIP connections from same IP
-			int count = 0, i = 0;
-			for ( i = 0; i< g_maxclients.integer; i++ ) {
-				if ( CompareIPString( tmpIP, level.clients[i].sess.IP ) ) {
-					count++;
-				}
-			}
-			if ( count > g_maxConnPerIP.integer ) {
-				return "Too many connections from the same IP";
-			}
 		}
 	}
 
