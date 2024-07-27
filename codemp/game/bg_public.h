@@ -17,7 +17,7 @@
 #define	MAX_SPAWN_VARS_CHARS	4096
 
 
-#define	GAME_VERSION		"basejk-1"
+#define	GAME_VERSION		"basejka-1"
 
 #define	STEPSIZE		18
 
